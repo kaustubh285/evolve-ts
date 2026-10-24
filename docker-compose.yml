@@ -1,0 +1,18 @@
+version: "3.8"
+
+services:
+    postgres:
+        image: postgres:15
+        container_name: evolve-postgres
+        environment:
+            POSTGRES_DB: evolvev1
+            POSTGRES_USER: postgres
+            POSTGRES_PASSWORD: evolvev101a16f50-a2f7-72d1-b96c-5f7682180640
+        ports:
+            - "5432:5432"
+        volumes:
+            - postgres_data:/var/lib/postgresql/data
+        restart: unless-stopped
+
+volumes:
+    postgres_data:
