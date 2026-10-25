@@ -1,7 +1,12 @@
 import { useState } from "react";
-import { createFileRoute, useNavigate, useRouter } from "@tanstack/react-router";
+import {
+  createFileRoute,
+  redirect,
+  useNavigate,
+  useRouter,
+} from "@tanstack/react-router";
 import { useForm } from "@tanstack/react-form";
-import { FieldInfo } from "#/components/ui/forms/fieldinfo";
+import { FieldInfo } from "#/components/forms/fieldinfo";
 import { Button } from "#/components/ui/button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
@@ -14,8 +19,15 @@ import {
   CardTitle,
 } from "#/components/ui/card";
 import { authClient } from "#/lib/auth-client";
+import { getSession } from "#/lib/auth.functions";
 
 export const Route = createFileRoute("/login")({
+  // Already signed in? Skip the form. Runs before render, on server and client.
+  beforeLoad: async () => {
+    if (await getSession()) {
+      throw redirect({ to: "/" });
+    }
+  },
   component: RouteComponent,
 });
 
@@ -25,10 +37,10 @@ type Mode = "sign-in" | "sign-up";
 const MIN_PASSWORD = 8;
 
 function RouteComponent() {
+  const router = useRouter();
   const [mode, setMode] = useState<Mode>("sign-in");
   const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate();
-  const router = useRouter();
 
   const form = useForm({
     defaultValues: {
@@ -66,10 +78,11 @@ function RouteComponent() {
   const isSignUp = mode === "sign-up";
 
   return (
-    <main className="flex min-h-screen items-center justify-center px-4 py-12">
+    <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-12">
+      <p className="text-lg font-semibold">Evolve</p>
       <Card className="w-full max-w-sm">
         <CardHeader>
-          <CardTitle className="text-2xl">
+          <CardTitle className="text-xl">
             {isSignUp ? "Create an account" : "Welcome back"}
           </CardTitle>
           <CardDescription>
@@ -103,7 +116,7 @@ function RouteComponent() {
                       id={field.name}
                       name={field.name}
                       autoComplete="name"
-                      placeholder="Ada Lovelace"
+                      placeholder="Deshpande"
                       value={field.state.value}
                       onBlur={field.handleBlur}
                       onChange={(e) => field.handleChange(e.target.value)}
@@ -165,7 +178,9 @@ function RouteComponent() {
                     id={field.name}
                     name={field.name}
                     type="password"
-                    autoComplete={isSignUp ? "new-password" : "current-password"}
+                    autoComplete={
+                      isSignUp ? "new-password" : "current-password"
+                    }
                     value={field.state.value}
                     onBlur={field.handleBlur}
                     onChange={(e) => field.handleChange(e.target.value)}
