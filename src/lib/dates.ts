@@ -101,3 +101,10 @@ function zonedParts(date: Date, timeZone: string) {
     second: get("second"),
   };
 }
+
+export function datesDiffs(date1: string, date2: string) {
+  const diffTime: number = Math.abs(new Date(date2) - new Date(date1));
+  const diffDays = Math.floor(diffTime / (1000 * 60 * 60 * 24));
+  console.log(diffTime + " milliseconds");
+  return diffDays;
+}

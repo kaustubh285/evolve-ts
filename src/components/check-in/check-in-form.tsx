@@ -1,9 +1,10 @@
 import { useForm } from "@tanstack/react-form";
 import { useServerFn } from "@tanstack/react-start";
+import { Section } from "#/components/check-in/section";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import { Textarea } from "#/components/ui/textarea";
-import { addDays, timeInZone, zonedDateTime } from "#/lib/dates";
+import { addDays, datesDiffs, timeInZone, zonedDateTime } from "#/lib/dates";
 import { type AutosaveStatus, useAutosave } from "#/lib/use-autosave";
 import { cn } from "#/lib/utils";
 import { type CheckInInput, checkInInput } from "#/lib/zod-schemas/check-in";
@@ -134,6 +135,15 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
               </div>
             )}
           />
+          <div className="grid gap-1.5 mb-2">
+            <p className="text-sm">
+              Total Hours:{" "}
+              {datesDiffs(
+                form.getFieldValue("wakeTime"),
+                form.getFieldValue("bedtime"),
+              )}
+            </p>
+          </div>
         </div>
 
         <form.Field
@@ -244,21 +254,6 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
         />
       </Section>
     </form>
-  );
-}
-
-function Section({
-  title,
-  children,
-}: {
-  title: string;
-  children: React.ReactNode;
-}) {
-  return (
-    <section className="flex flex-col gap-4">
-      <h2 className="border-b pb-1 text-lg font-semibold">{title}</h2>
-      {children}
-    </section>
   );
 }
 
