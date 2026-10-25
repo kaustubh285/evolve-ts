@@ -1,0 +1,21 @@
+// Project overrides only — formatter/LSP setup lives in your global Zed settings.
+{
+  // Vite/Nitro rewrite these constantly while `bun dev` runs; scanning them
+  // keeps the TS server busy. (Overrides Zed's default list, so it's repeated.)
+  "file_scan_exclusions": [
+    "**/.git",
+    "**/.svn",
+    "**/.hg",
+    "**/.jj",
+    "**/CVS",
+    "**/.DS_Store",
+    "**/Thumbs.db",
+    "**/.classpath",
+    "**/.settings",
+    "**/.output",
+    "**/.nitro",
+    "**/.tanstack",
+    "**/node_modules/.vite",
+    "**/node_modules/.nitro"
+  ]
+}

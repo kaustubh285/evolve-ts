@@ -1,9 +1,9 @@
 import { createServerFn } from "@tanstack/react-start";
-import { authMiddleware } from "./middleware";
-import { healthEvent } from "#/db/schema";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "#/db";
+import { healthEvent } from "#/db/schema";
 import { healthEventInput } from "#/lib/zod-schemas/health-event";
+import { authMiddleware } from "./middleware";
 
 export const saveHealthEvent = createServerFn({ method: "POST" })
   .middleware([authMiddleware])

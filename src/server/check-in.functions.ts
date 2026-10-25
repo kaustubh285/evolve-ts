@@ -1,12 +1,12 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { z } from "zod";
 import { db } from "#/db";
-import env from "#/env";
 import { checkIn, healthEvent, transaction } from "#/db/schema";
+import env from "#/env";
 import { checkInInput } from "#/lib/zod-schemas/check-in";
 import { dayInput } from "#/lib/zod-schemas/common";
 import { authMiddleware } from "./middleware";
-import z from "zod";
 
 /**
  * Everything recorded for one day: the check-in (or null) plus the
@@ -102,14 +102,15 @@ export const getMultipleCheckIn = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .validator(z.object({ count: z.number().int().min(1).max(366) }))
   .handler(async ({ data: { count }, context: { userId } }) => {
-    // The four reads don't depend on each other → run them in parallel.
+    // Most recent first.
     const checkInRows = await db
       .select()
       .from(checkIn)
       .where(and(eq(checkIn.userId, userId), isNull(checkIn.deletedAt)))
-      .limit(count);
+      .limit(count)
+      .orderBy(desc(checkIn.date));
 
     return {
-      checkIn: checkInRows ?? null,
+      checkIns: checkInRows,
     };
   });

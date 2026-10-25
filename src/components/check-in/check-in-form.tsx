@@ -5,8 +5,8 @@ import { Label } from "#/components/ui/label";
 import { Textarea } from "#/components/ui/textarea";
 import { addDays, timeInZone, zonedDateTime } from "#/lib/dates";
 import { type AutosaveStatus, useAutosave } from "#/lib/use-autosave";
-import { type CheckInInput, checkInInput } from "#/lib/zod-schemas/check-in";
 import { cn } from "#/lib/utils";
+import { type CheckInInput, checkInInput } from "#/lib/zod-schemas/check-in";
 import { type getCheckIn, saveCheckIn } from "#/server/check-in.functions";
 
 // The row type straight from the server function's return type — no DB import needed.
@@ -50,7 +50,9 @@ function toInput(v: FormValues, date: string, timeZone: string): CheckInInput {
 
   return {
     date,
-    sleepStart: v.bedtime ? zonedDateTime(bedtimeDay, v.bedtime, timeZone) : null,
+    sleepStart: v.bedtime
+      ? zonedDateTime(bedtimeDay, v.bedtime, timeZone)
+      : null,
     sleepEnd: v.wakeTime ? zonedDateTime(date, v.wakeTime, timeZone) : null,
     sleepQuality: v.sleepQuality,
     meal: v.meal,
@@ -294,14 +296,13 @@ function SaveStatus({
   }[status];
 
   return (
-    <p
-      role="status"
+    <output
       className={cn(
-        "-mt-4 h-5 text-sm text-muted-foreground",
+        "-mt-4 block h-5 text-sm text-muted-foreground",
         status === "error" && "text-destructive",
       )}
     >
       {text}
-    </p>
+    </output>
   );
 }

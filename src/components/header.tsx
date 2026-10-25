@@ -12,6 +12,11 @@ export function EvolveHeader({ user }: Props) {
         <Link to="/" className="font-semibold">
           Evolve
         </Link>
+        <div className="d-flex space-x-8 ">
+          <Link to="/check-in">Check-in</Link>
+          <Link to="/">Health Event</Link>
+          <Link to="/">Workout</Link>
+        </div>
         <UserMenu user={user} />
       </div>
     </header>

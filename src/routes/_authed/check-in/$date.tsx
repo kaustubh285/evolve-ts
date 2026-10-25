@@ -1,4 +1,4 @@
-import { Link, createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { CheckInForm } from "#/components/check-in/check-in-form";
 import { addDays, formatIso } from "#/lib/dates";
 import { isoDate } from "#/lib/zod-schemas/common";

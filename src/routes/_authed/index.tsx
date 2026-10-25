@@ -1,3 +1,4 @@
+import { Link } from "@tanstack/react-router";
 import { createFileRoute } from "@tanstack/react-router";
 
 export const Route = createFileRoute("/_authed/")({ component: Home });
@@ -8,6 +9,7 @@ function Home() {
     <div>
       <h1 className="text-2xl font-semibold">Check-ins</h1>
       <p className="mt-2 text-muted-foreground">No check-ins yet.</p>
+      <Link to={"/check-in"}>Check-in</Link>
     </div>
   );
 }
