@@ -12,6 +12,8 @@ import { Route as rootRouteImport } from './routes/__root'
 import { Route as AuthedRouteImport } from './routes/_authed'
 import { Route as LoginRouteImport } from './routes/login'
 import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
+import { Route as AuthedCheckInIndexRouteImport } from './routes/_authed/check-in/index'
+import { Route as AuthedCheckInDateRouteImport } from './routes/_authed/check-in/$date'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AuthedRoute = AuthedRouteImport.update({
@@ -28,6 +30,16 @@ const AuthedIndexRoute = AuthedIndexRouteImport.update({
   path: '/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedCheckInIndexRoute = AuthedCheckInIndexRouteImport.update({
+  id: '/check-in/',
+  path: '/check-in/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedCheckInDateRoute = AuthedCheckInDateRouteImport.update({
+  id: '/check-in/$date',
+  path: '/check-in/$date',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -37,26 +49,39 @@ const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
 export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
+  '/check-in/$date': typeof AuthedCheckInDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/check-in/': typeof AuthedCheckInIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthedIndexRoute
+  '/check-in/$date': typeof AuthedCheckInDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/check-in': typeof AuthedCheckInIndexRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/_authed': typeof AuthedRouteWithChildren
   '/login': typeof LoginRoute
   '/_authed/': typeof AuthedIndexRoute
+  '/_authed/check-in/$date': typeof AuthedCheckInDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
+  '/_authed/check-in/': typeof AuthedCheckInIndexRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/login' | '/api/auth/$'
+  fullPaths: '/' | '/login' | '/check-in/$date' | '/api/auth/$' | '/check-in/'
   fileRoutesByTo: FileRoutesByTo
-  to: '/login' | '/' | '/api/auth/$'
-  id: '__root__' | '/_authed' | '/login' | '/_authed/' | '/api/auth/$'
+  to: '/login' | '/' | '/check-in/$date' | '/api/auth/$' | '/check-in'
+  id:
+    | '__root__'
+    | '/_authed'
+    | '/login'
+    | '/_authed/'
+    | '/_authed/check-in/$date'
+    | '/api/auth/$'
+    | '/_authed/check-in/'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
@@ -88,6 +113,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/check-in/': {
+      id: '/_authed/check-in/'
+      path: '/check-in'
+      fullPath: '/check-in/'
+      preLoaderRoute: typeof AuthedCheckInIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/check-in/$date': {
+      id: '/_authed/check-in/$date'
+      path: '/check-in/$date'
+      fullPath: '/check-in/$date'
+      preLoaderRoute: typeof AuthedCheckInDateRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -100,10 +139,14 @@ declare module '@tanstack/react-router' {
 
 interface AuthedRouteChildren {
   AuthedIndexRoute: typeof AuthedIndexRoute
+  AuthedCheckInDateRoute: typeof AuthedCheckInDateRoute
+  AuthedCheckInIndexRoute: typeof AuthedCheckInIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedIndexRoute: AuthedIndexRoute,
+  AuthedCheckInDateRoute: AuthedCheckInDateRoute,
+  AuthedCheckInIndexRoute: AuthedCheckInIndexRoute,
 }
 
 const AuthedRouteWithChildren =

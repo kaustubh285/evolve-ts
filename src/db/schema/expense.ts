@@ -9,12 +9,10 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { base, day } from "../schema-helper";
+import { TRANSACTION_TYPES } from "../../lib/zod-schemas/transaction";
 import { user } from "./auth";
 
-export const transactionType = pgEnum("transaction_type", [
-  "income",
-  "expense",
-]);
+export const transactionType = pgEnum("transaction_type", TRANSACTION_TYPES);
 
 export const transaction = pgTable(
   "transaction",

@@ -9,18 +9,10 @@ import {
   timestamp,
 } from "drizzle-orm/pg-core";
 import { base, day } from "../schema-helper";
+import { HEALTH_EVENT_TYPES } from "../../lib/zod-schemas/health-event";
 import { user } from "./auth";
 
-// Adding a value later needs a migration (ALTER TYPE ... ADD VALUE).
-export const healthEventType = pgEnum("health_event_type", [
-  "migraine",
-  "acid_reflux",
-  "sinusitis",
-  "sore_throat",
-  "stomach_ache",
-  "back_pain",
-  "headache",
-]);
+export const healthEventType = pgEnum("health_event_type", HEALTH_EVENT_TYPES);
 
 export const healthEvent = pgTable(
   "health_event",

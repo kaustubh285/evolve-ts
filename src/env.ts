@@ -16,6 +16,8 @@ const EnvSchema = z.object({
   DATABASE_URL: z.url(),
   BETTER_AUTH_URL: z.url(),
   BETTER_AUTH_SECRET: z.string().min(1),
+  // Whose "today" the app uses (IANA name). Server runs in UTC; this keeps days aligned with you.
+  APP_TIMEZONE: z.string().default("Europe/London"),
   ALLOWED_EMAILS: z
     .string()
     .transform((s) => s.split(",").map((e) => e.trim().toLowerCase())),
