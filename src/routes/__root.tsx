@@ -9,6 +9,7 @@ import { TanStackDevtools } from "@tanstack/react-devtools";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 
 import appCss from "../styles.css?url";
+import fontRegular from "../assets/fonts/comic-neue/ComicNeue-Regular.woff2?url";
 
 import type { QueryClient } from "@tanstack/react-query";
 import { themeInitScript } from "#/lib/theme";
@@ -42,6 +43,14 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
       },
     ],
     links: [
+      // Body weight: fetch in parallel with the CSS instead of after it.
+      {
+        rel: "preload",
+        href: fontRegular,
+        as: "font",
+        type: "font/woff2",
+        crossOrigin: "anonymous",
+      },
       {
         rel: "stylesheet",
         href: appCss,
