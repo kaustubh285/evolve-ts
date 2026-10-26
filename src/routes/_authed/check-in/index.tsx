@@ -1,6 +1,7 @@
 import { createFileRoute, Link, useNavigate } from "@tanstack/react-router";
 import { z } from "zod";
 import { CheckInForm } from "#/components/check-in/check-in-form";
+import { HealthEventsSection } from "#/components/check-in/health-events-section";
 import { TransactionsSection } from "#/components/check-in/transactions-section";
 import {
   Dialog,
@@ -103,6 +104,12 @@ function CheckInsPage() {
             <TransactionsSection
               date={day.date}
               transactions={day.transactions}
+            />
+
+            <HealthEventsSection
+              date={day.date}
+              timeZone={day.timeZone}
+              healthEvents={day.healthEvents}
             />
 
             <DialogFooter>

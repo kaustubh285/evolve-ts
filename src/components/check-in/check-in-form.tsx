@@ -1,10 +1,12 @@
 import { useForm } from "@tanstack/react-form";
 import { useServerFn } from "@tanstack/react-start";
+import { useEffect, useRef } from "react";
 import { Section } from "#/components/check-in/section";
+import { ChoiceButton } from "#/components/choice-button";
 import { Input } from "#/components/ui/input";
 import { Label } from "#/components/ui/label";
 import { Textarea } from "#/components/ui/textarea";
-import { addDays, datesDiffs, timeInZone, zonedDateTime } from "#/lib/dates";
+import { addDays, formatIso, timeInZone, zonedDateTime } from "#/lib/dates";
 import { type AutosaveStatus, useAutosave } from "#/lib/use-autosave";
 import { cn } from "#/lib/utils";
 import { type CheckInInput, checkInInput } from "#/lib/zod-schemas/check-in";
@@ -41,20 +43,40 @@ function toValues(row: CheckInRow, timeZone: string): FormValues {
   };
 }
 
-function toInput(v: FormValues, date: string, timeZone: string): CheckInInput {
-  // You wake up on `date`. Bedtime is the evening before — unless it's after
-  // midnight (e.g. 00:40), which is still earlier than wake-up, so same day.
+/**
+ * The check-in for `date` covers the night of date-1 → morning of `date`.
+ * Wake-up is on `date`. Bedtime is on date-1, unless it's after midnight
+ * (e.g. 00:40 — earlier than wake-up), which is the real moment on `date`.
+ */
+function sleepTimes(
+  bedtime: string,
+  wakeTime: string,
+  date: string,
+  timeZone: string,
+) {
   const bedtimeDay =
-    v.bedtime && (v.wakeTime ? v.bedtime > v.wakeTime : v.bedtime >= "12:00")
+    bedtime && (wakeTime ? bedtime > wakeTime : bedtime >= "12:00")
       ? addDays(date, -1)
       : date;
+  return {
+    start: bedtime ? zonedDateTime(bedtimeDay, bedtime, timeZone) : null,
+    end: wakeTime ? zonedDateTime(date, wakeTime, timeZone) : null,
+  };
+}
+
+/** 7h 40m. Real timestamps, so a clock-change night comes out right. */
+function formatDuration(start: Date, end: Date) {
+  const minutes = Math.round((end.getTime() - start.getTime()) / 60_000);
+  return `${Math.floor(minutes / 60)}h ${String(minutes % 60).padStart(2, "0")}m`;
+}
+
+function toInput(v: FormValues, date: string, timeZone: string): CheckInInput {
+  const sleep = sleepTimes(v.bedtime, v.wakeTime, date, timeZone);
 
   return {
     date,
-    sleepStart: v.bedtime
-      ? zonedDateTime(bedtimeDay, v.bedtime, timeZone)
-      : null,
-    sleepEnd: v.wakeTime ? zonedDateTime(date, v.wakeTime, timeZone) : null,
+    sleepStart: sleep.start,
+    sleepEnd: sleep.end,
     sleepQuality: v.sleepQuality,
     meal: v.meal,
     proteinAtBreakfast: v.proteinAtBreakfast,
@@ -73,7 +95,11 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
   const saveFn = useServerFn(saveCheckIn);
   const autosave = useAutosave((data: CheckInInput) => saveFn({ data }));
 
+  // What we last handed to the server (as JSON) — lets `flush` skip no-ops.
+  const lastSent = useRef(JSON.stringify(toValues(checkIn, timeZone)));
+
   function trySave(values: FormValues) {
+    lastSent.current = JSON.stringify(values);
     // Same schema the server uses — catch mistakes before the round trip.
     const parsed = checkInInput.safeParse(toInput(values, date, timeZone));
     if (!parsed.success) {
@@ -96,6 +122,28 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
     },
   });
 
+  // Save now if there's a change the debounce hasn't sent yet.
+  const flush = useRef(() => {});
+  flush.current = () => {
+    if (JSON.stringify(form.state.values) !== lastSent.current) {
+      trySave(form.state.values);
+    }
+  };
+
+  // Without this, an edit made <700ms before leaving is lost: closing the
+  // modal, Prev/Next (key change) or navigating unmounts the form first.
+  // Also flush when the app is backgrounded (phone/PWA app switch).
+  useEffect(() => {
+    const onHide = () => {
+      if (document.visibilityState === "hidden") flush.current();
+    };
+    document.addEventListener("visibilitychange", onHide);
+    return () => {
+      document.removeEventListener("visibilitychange", onHide);
+      flush.current();
+    };
+  }, []);
+
   return (
     <form onSubmit={(e) => e.preventDefault()} className="flex flex-col gap-8">
       <SaveStatus status={autosave.status} error={autosave.error} />
@@ -106,7 +154,12 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
             name="bedtime"
             children={(field) => (
               <div className="grid gap-1.5">
-                <Label htmlFor={field.name}>Bedtime</Label>
+                <Label htmlFor={field.name}>
+                  Bedtime
+                  <span className="font-normal text-muted-foreground">
+                    · night of {formatIso(addDays(date, -1))}
+                  </span>
+                </Label>
                 <Input
                   id={field.name}
                   type="time"
@@ -123,7 +176,12 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
             name="wakeTime"
             children={(field) => (
               <div className="grid gap-1.5">
-                <Label htmlFor={field.name}>Woke up</Label>
+                <Label htmlFor={field.name}>
+                  Woke up
+                  <span className="font-normal text-muted-foreground">
+                    · {formatIso(date)}
+                  </span>
+                </Label>
                 <Input
                   id={field.name}
                   type="time"
@@ -135,15 +193,23 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
               </div>
             )}
           />
-          <div className="grid gap-1.5 mb-2">
-            <p className="text-sm">
-              Total Hours:{" "}
-              {datesDiffs(
-                form.getFieldValue("wakeTime"),
-                form.getFieldValue("bedtime"),
-              )}
-            </p>
-          </div>
+          <form.Subscribe
+            selector={(s) => [s.values.bedtime, s.values.wakeTime] as const}
+            children={([bedtime, wakeTime]) => {
+              const { start, end } = sleepTimes(
+                bedtime,
+                wakeTime,
+                date,
+                timeZone,
+              );
+              if (!start || !end || end <= start) return null;
+              return (
+                <p className="pb-2 text-sm text-muted-foreground">
+                  {formatDuration(start, end)} asleep
+                </p>
+              );
+            }}
+          />
         </div>
 
         <form.Field
@@ -254,25 +320,6 @@ export function CheckInForm({ date, timeZone, checkIn }: Props) {
         />
       </Section>
     </form>
-  );
-}
-
-function ChoiceButton({
-  pressed,
-  className,
-  ...props
-}: React.ComponentProps<"button"> & { pressed: boolean }) {
-  return (
-    <button
-      type="button"
-      aria-pressed={pressed}
-      className={cn(
-        "h-9 rounded-md border text-sm transition-colors hover:bg-accent",
-        "aria-pressed:border-primary aria-pressed:bg-primary aria-pressed:text-primary-foreground",
-        className,
-      )}
-      {...props}
-    />
   );
 }
 

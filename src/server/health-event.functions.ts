@@ -2,6 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { and, eq, isNull } from "drizzle-orm";
 import { db } from "#/db";
 import { healthEvent } from "#/db/schema";
+import { idInput } from "#/lib/zod-schemas/common";
 import { healthEventInput } from "#/lib/zod-schemas/health-event";
 import { authMiddleware } from "./middleware";
 
@@ -36,4 +37,25 @@ export const saveHealthEvent = createServerFn({ method: "POST" })
       }
       return saved;
     });
+  });
+
+/** Soft delete: sets deletedAt, so every read (which filters deletedAt IS NULL) stops seeing it. */
+export const deleteHealthEvent = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(idInput)
+  .handler(async ({ data: { id }, context: { userId } }) => {
+    const [deleted] = await db
+      .update(healthEvent)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(healthEvent.id, id),
+          eq(healthEvent.userId, userId),
+          isNull(healthEvent.deletedAt),
+        ),
+      )
+      .returning({ id: healthEvent.id });
+
+    if (!deleted) throw new Error("Health event not found");
+    return deleted;
   });

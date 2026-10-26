@@ -1,18 +1,15 @@
+import { TanStackDevtools } from "@tanstack/react-devtools";
+import type { QueryClient } from "@tanstack/react-query";
 import {
+  createRootRouteWithContext,
   HeadContent,
   Scripts,
-  createRootRouteWithContext,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { TanStackDevtools } from "@tanstack/react-devtools";
-
-import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
-
-import appCss from "../styles.css?url";
-import fontRegular from "../assets/fonts/comic-neue/ComicNeue-Regular.woff2?url";
-
-import type { QueryClient } from "@tanstack/react-query";
 import { themeInitScript } from "#/lib/theme";
+import fontRegular from "../assets/fonts/comic-neue/ComicNeue-Regular.woff2?url";
+import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
+import appCss from "../styles.css?url";
 
 interface MyRouterContext {
   queryClient: QueryClient;
@@ -73,7 +70,8 @@ function RootDocument({ children }: { children: React.ReactNode }) {
         {children}
         <TanStackDevtools
           config={{
-            position: "bottom-right",
+            // bottom-left: bottom-right is where the quick-add "+" lives.
+            position: "bottom-left",
           }}
           plugins={[
             {

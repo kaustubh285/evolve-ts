@@ -1,5 +1,6 @@
 import { createFileRoute, Link, notFound } from "@tanstack/react-router";
 import { CheckInForm } from "#/components/check-in/check-in-form";
+import { HealthEventsSection } from "#/components/check-in/health-events-section";
 import { TransactionsSection } from "#/components/check-in/transactions-section";
 import { addDays, formatIso } from "#/lib/dates";
 import { isoDate } from "#/lib/zod-schemas/common";
@@ -61,6 +62,14 @@ function CheckInPage() {
 
       <div className="mt-8">
         <TransactionsSection date={date} transactions={data.transactions} />
+      </div>
+
+      <div className="mt-8">
+        <HealthEventsSection
+          date={date}
+          timeZone={data.timeZone}
+          healthEvents={data.healthEvents}
+        />
       </div>
     </div>
   );

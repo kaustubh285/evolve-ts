@@ -18,7 +18,7 @@ export const healthEventInput = z
     id: z.uuid().optional(),
     date: isoDate,
 
-    type: z.enum(HEALTH_EVENT_TYPES),
+    type: z.enum(HEALTH_EVENT_TYPES, "Pick what happened"),
     startedAt: z.date().nullable(),
     endedAt: z.date().nullable(), // null = ongoing / unknown
     severity: optionalInt(1, 10),
