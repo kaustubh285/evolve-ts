@@ -1,3 +1,9 @@
+import {
+  ColorSchemeScript,
+  MantineProvider,
+  mantineHtmlProps,
+} from "@mantine/core";
+import mantineCss from "@mantine/core/styles.css?url";
 import { TanStackDevtools } from "@tanstack/react-devtools";
 import type { QueryClient } from "@tanstack/react-query";
 import {
@@ -6,7 +12,7 @@ import {
   Scripts,
 } from "@tanstack/react-router";
 import { TanStackRouterDevtoolsPanel } from "@tanstack/react-router-devtools";
-import { themeInitScript } from "#/lib/theme";
+import { cssVariablesResolver, theme } from "#/lib/mantine-theme";
 import fontRegular from "../assets/fonts/comic-neue/ComicNeue-Regular.woff2?url";
 import TanStackQueryDevtools from "../integrations/tanstack-query/devtools";
 import appCss from "../styles.css?url";
@@ -48,6 +54,8 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
         type: "font/woff2",
         crossOrigin: "anonymous",
       },
+      // Mantine first, ours after (ours wins where both style the same thing).
+      { rel: "stylesheet", href: mantineCss },
       {
         rel: "stylesheet",
         href: appCss,
@@ -59,15 +67,21 @@ export const Route = createRootRouteWithContext<MyRouterContext>()({
 
 function RootDocument({ children }: { children: React.ReactNode }) {
   return (
-    // The theme script adds `dark` to <html> before React hydrates.
-    <html lang="en" suppressHydrationWarning>
+    // mantineHtmlProps + ColorSchemeScript: Mantine sets
+    // data-mantine-color-scheme on <html> before first paint (no flash).
+    <html lang="en" {...mantineHtmlProps}>
       <head>
-        {/* biome-ignore lint/security/noDangerouslySetInnerHtml: static script we own, must run before paint */}
-        <script dangerouslySetInnerHTML={{ __html: themeInitScript }} />
+        <ColorSchemeScript defaultColorScheme="auto" />
         <HeadContent />
       </head>
-      <body className="flex min-h-screen flex-col">
-        {children}
+      <body className="">
+        <MantineProvider
+          theme={theme}
+          cssVariablesResolver={cssVariablesResolver}
+          defaultColorScheme="auto"
+        >
+          {children}
+        </MantineProvider>
         <TanStackDevtools
           config={{
             // bottom-left: bottom-right is where the quick-add "+" lives.

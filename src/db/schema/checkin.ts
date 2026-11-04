@@ -7,6 +7,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
+  numeric
 } from "drizzle-orm/pg-core";
 import { base, day } from "../schema-helper";
 import { user } from "./auth";
@@ -29,6 +30,7 @@ export const checkIn = pgTable(
     proteinAtBreakfast: boolean(),
     proteinAtLunch: boolean(),
     proteinAtDinner: boolean(),
+    waterIntake: numeric({ precision: 6, scale: 2, mode: "number" }),
 
     steps: integer(),
     notes: text(),
@@ -38,7 +40,10 @@ export const checkIn = pgTable(
     uniqueIndex("check_in_user_date_uq")
       .on(t.userId, t.date)
       .where(sql`${t.deletedAt} is null`),
-    check("check_in_sleep_quality_range", sql`${t.sleepQuality} between 1 and 5`),
+    check(
+      "check_in_sleep_quality_range",
+      sql`${t.sleepQuality} between 1 and 5`,
+    ),
     check("check_in_sleep_order", sql`${t.sleepEnd} > ${t.sleepStart}`),
     check("check_in_steps_positive", sql`${t.steps} >= 0`),
   ],

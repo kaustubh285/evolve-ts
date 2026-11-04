@@ -1,25 +1,26 @@
-import { useState } from "react";
+import {
+  Alert,
+  Anchor,
+  Button,
+  Center,
+  Paper,
+  PasswordInput,
+  Stack,
+  Text,
+  TextInput,
+  Title,
+} from "@mantine/core";
+import { schemaResolver, useForm } from "@mantine/form";
 import {
   createFileRoute,
   redirect,
   useNavigate,
   useRouter,
 } from "@tanstack/react-router";
-import { useForm } from "@tanstack/react-form";
-import { FieldInfo } from "#/components/forms/fieldinfo";
-import { Button } from "#/components/ui/button";
-import { Input } from "#/components/ui/input";
-import { Label } from "#/components/ui/label";
-import {
-  Card,
-  CardContent,
-  CardDescription,
-  CardFooter,
-  CardHeader,
-  CardTitle,
-} from "#/components/ui/card";
-import { authClient } from "#/lib/auth-client";
+import { useState } from "react";
+import { z } from "zod";
 import { getSession } from "#/lib/auth.functions";
+import { authClient } from "#/lib/auth-client";
 
 export const Route = createFileRoute("/login")({
   // Already signed in? Skip the form. Runs before render, on server and client.
@@ -28,217 +29,141 @@ export const Route = createFileRoute("/login")({
       throw redirect({ to: "/" });
     }
   },
-  component: RouteComponent,
+  component: LoginPage,
 });
-
-type Mode = "sign-in" | "sign-up";
 
 // Better Auth's default minPasswordLength is 8; anything shorter fails server-side.
 const MIN_PASSWORD = 8;
 
-function RouteComponent() {
+// `mode` lives in the form values, so one schema can switch rules:
+// sign-up needs a name and a longer password, sign-in doesn't.
+const loginSchema = z.discriminatedUnion("mode", [
+  z.object({
+    mode: z.literal("sign-in"),
+    email: z.email("Enter a valid email"),
+    password: z.string().min(1, "Password is required"),
+    name: z.string(),
+  }),
+  z.object({
+    mode: z.literal("sign-up"),
+    email: z.email("Enter a valid email"),
+    password: z
+      .string()
+      .min(MIN_PASSWORD, `At least ${MIN_PASSWORD} characters`),
+    name: z.string().trim().min(1, "Name is required"),
+  }),
+]);
+
+type LoginValues = z.infer<typeof loginSchema>;
+
+function LoginPage() {
   const router = useRouter();
-  const [mode, setMode] = useState<Mode>("sign-in");
-  const [serverError, setServerError] = useState<string | null>(null);
   const navigate = useNavigate();
+  const [serverError, setServerError] = useState<string | null>(null);
 
-  const form = useForm({
-    defaultValues: {
-      email: "",
-      password: "",
-      name: "",
-    },
-    onSubmit: async ({ value }) => {
-      setServerError(null);
-
-      // Better Auth returns { data, error } instead of throwing.
-      const { error } =
-        mode === "sign-up"
-          ? await authClient.signUp.email({
-              email: value.email,
-              password: value.password,
-              name: value.name,
-            })
-          : await authClient.signIn.email({
-              email: value.email,
-              password: value.password,
-            });
-
-      if (error) {
-        setServerError(error.message ?? "Something went wrong");
-        return;
-      }
-
-      // Re-run loaders/beforeLoad so they see the new session cookie.
-      await router.invalidate();
-      await navigate({ to: "/" });
-    },
+  const form = useForm<LoginValues>({
+    initialValues: { mode: "sign-in", email: "", password: "", name: "" },
+    // Same zod schema style as everywhere else; Mantine maps issues to fields.
+    validate: schemaResolver(loginSchema, { sync: true }),
+    validateInputOnBlur: true,
   });
 
-  const isSignUp = mode === "sign-up";
+  const isSignUp = form.values.mode === "sign-up";
+
+  async function handleSubmit(values: LoginValues) {
+    setServerError(null);
+    // Better Auth returns { data, error } instead of throwing.
+    const { email, password, name } = values;
+    const { error } =
+      values.mode === "sign-up"
+        ? await authClient.signUp.email({ email, password, name })
+        : await authClient.signIn.email({ email, password });
+
+    if (error) {
+      setServerError(error.message ?? "Something went wrong");
+      return;
+    }
+    // Re-run loaders/beforeLoad so they see the new session cookie.
+    await router.invalidate();
+    await navigate({ to: "/" });
+  }
 
   return (
-    <main className="flex min-h-screen flex-col items-center justify-center gap-6 px-4 py-12">
-      <p className="text-lg font-semibold">Evolve</p>
-      <Card className="w-full max-w-sm">
-        <CardHeader>
-          <CardTitle className="text-xl">
-            {isSignUp ? "Create an account" : "Welcome back"}
-          </CardTitle>
-          <CardDescription>
-            {isSignUp
-              ? "Sign up with your email and a password."
-              : "Sign in to continue."}
-          </CardDescription>
-        </CardHeader>
+    <Center mih="100vh" px="md" py="xl">
+      <Stack w="100%" maw={384} gap="lg">
+        <Text ta="center" fw={700} size="lg">
+          Evolve
+        </Text>
 
-        <form
-          noValidate
-          onSubmit={(e) => {
-            e.preventDefault();
-            e.stopPropagation();
-            form.handleSubmit();
-          }}
-          className="flex flex-col gap-6"
-        >
-          <CardContent className="flex flex-col gap-4">
-            {isSignUp && (
-              <form.Field
-                name="name"
-                validators={{
-                  onChange: ({ value }) =>
-                    !value.trim() ? "Name is required" : undefined,
-                }}
-                children={(field) => (
-                  <div className="grid gap-2">
-                    <Label htmlFor={field.name}>Name</Label>
-                    <Input
-                      id={field.name}
-                      name={field.name}
-                      autoComplete="name"
-                      placeholder="Deshpande"
-                      value={field.state.value}
-                      onBlur={field.handleBlur}
-                      onChange={(e) => field.handleChange(e.target.value)}
-                      aria-invalid={
-                        field.state.meta.isTouched && !field.state.meta.isValid
-                      }
-                    />
-                    <FieldInfo field={field} />
-                  </div>
-                )}
+        <Paper withBorder shadow="xs" p="lg">
+          {/* form.onSubmit validates first; handleSubmit only runs if valid. */}
+          <form onSubmit={form.onSubmit(handleSubmit)} noValidate>
+            <Stack gap="md">
+              <div>
+                <Title order={2} size="h3">
+                  {isSignUp ? "Create an account" : "Welcome back"}
+                </Title>
+                <Text size="sm" c="dimmed">
+                  {isSignUp
+                    ? "Sign up with your email and a password."
+                    : "Sign in to continue."}
+                </Text>
+              </div>
+
+              {isSignUp && (
+                <TextInput
+                  label="Name"
+                  autoComplete="name"
+                  {...form.getInputProps("name")}
+                />
+              )}
+              <TextInput
+                label="Email"
+                type="email"
+                autoComplete="email"
+                placeholder="you@example.com"
+                {...form.getInputProps("email")}
               />
-            )}
+              <PasswordInput
+                label="Password"
+                autoComplete={isSignUp ? "new-password" : "current-password"}
+                {...form.getInputProps("password")}
+              />
 
-            <form.Field
-              name="email"
-              validators={{
-                onChange: ({ value }) =>
-                  !value
-                    ? "Email is required"
-                    : !/^\S+@\S+\.\S+$/.test(value)
-                      ? "Enter a valid email"
-                      : undefined,
-              }}
-              children={(field) => (
-                <div className="grid gap-2">
-                  <Label htmlFor={field.name}>Email</Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="email"
-                    autoComplete="email"
-                    placeholder="you@example.com"
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={
-                      field.state.meta.isTouched && !field.state.meta.isValid
-                    }
-                  />
-                  <FieldInfo field={field} />
-                </div>
+              {serverError && (
+                <Alert color="red" variant="light" p="xs">
+                  {serverError}
+                </Alert>
               )}
-            />
 
-            <form.Field
-              name="password"
-              validators={{
-                onChange: ({ value }) =>
-                  !value
-                    ? "Password is required"
-                    : isSignUp && value.length < MIN_PASSWORD
-                      ? `Password must be at least ${MIN_PASSWORD} characters`
-                      : undefined,
-              }}
-              children={(field) => (
-                <div className="grid gap-2">
-                  <Label htmlFor={field.name}>Password</Label>
-                  <Input
-                    id={field.name}
-                    name={field.name}
-                    type="password"
-                    autoComplete={
-                      isSignUp ? "new-password" : "current-password"
-                    }
-                    value={field.state.value}
-                    onBlur={field.handleBlur}
-                    onChange={(e) => field.handleChange(e.target.value)}
-                    aria-invalid={
-                      field.state.meta.isTouched && !field.state.meta.isValid
-                    }
-                  />
-                  <FieldInfo field={field} />
-                </div>
-              )}
-            />
+              <Button type="submit" fullWidth loading={form.submitting}>
+                {isSignUp ? "Create account" : "Sign in"}
+              </Button>
 
-            {serverError && (
-              <p
-                role="alert"
-                className="rounded-md border border-destructive/30 bg-destructive/10 px-3 py-2 text-sm text-destructive"
-              >
-                {serverError}
-              </p>
-            )}
-          </CardContent>
-
-          <CardFooter className="flex flex-col gap-3">
-            <form.Subscribe
-              selector={(state) => [state.canSubmit, state.isSubmitting]}
-              children={([canSubmit, isSubmitting]) => (
-                <Button
-                  type="submit"
-                  className="w-full"
-                  disabled={!canSubmit || isSubmitting}
+              <Text size="sm" c="dimmed" ta="center">
+                {isSignUp
+                  ? "Already have an account?"
+                  : "Don't have an account?"}{" "}
+                <Anchor
+                  component="button"
+                  type="button"
+                  fw={600}
+                  onClick={() => {
+                    form.setFieldValue(
+                      "mode",
+                      isSignUp ? "sign-in" : "sign-up",
+                    );
+                    form.clearErrors();
+                    setServerError(null);
+                  }}
                 >
-                  {isSubmitting
-                    ? isSignUp
-                      ? "Creating account…"
-                      : "Signing in…"
-                    : isSignUp
-                      ? "Create account"
-                      : "Sign in"}
-                </Button>
-              )}
-            />
-
-            <p className="text-center text-sm text-muted-foreground">
-              {isSignUp ? "Already have an account?" : "Don't have an account?"}{" "}
-              <button
-                type="button"
-                onClick={() => {
-                  setMode(isSignUp ? "sign-in" : "sign-up");
-                  setServerError(null);
-                }}
-                className="font-medium text-foreground underline-offset-4 hover:underline"
-              >
-                {isSignUp ? "Sign in" : "Sign up"}
-              </button>
-            </p>
-          </CardFooter>
-        </form>
-      </Card>
-    </main>
+                  {isSignUp ? "Sign in" : "Sign up"}
+                </Anchor>
+              </Text>
+            </Stack>
+          </form>
+        </Paper>
+      </Stack>
+    </Center>
   );
 }

@@ -1,0 +1,1 @@
+ALTER TABLE "check_in" ADD COLUMN "water_intake" numeric(6, 2);
