@@ -9,7 +9,7 @@ import { auth } from "#/lib/auth";
  * Returns null when signed out (the layout turns that into a redirect).
  */
 export const getViewer = createServerFn({ method: "GET" }).handler(async () => {
-	const session = await auth.api.getSession({ headers: getRequestHeaders() });
-	if (!session) return null;
-	return { user: session.user, timeZone: env.APP_TIMEZONE };
+  const session = await auth.api.getSession({ headers: getRequestHeaders() });
+  if (!session) return null;
+  return { user: session.user, timeZone: env.APP_TIMEZONE };
 });

@@ -7,6 +7,8 @@ import { db } from "#/db";
 export const auth = betterAuth({
   secret: env.BETTER_AUTH_SECRET,
   baseURL: env.BETTER_AUTH_URL,
+  // baseURL is always trusted; these are extras (e.g. phone on the LAN in dev).
+  trustedOrigins: env.TRUSTED_ORIGINS,
   // databaseHooks: {
   //   user: {
   //     create: {

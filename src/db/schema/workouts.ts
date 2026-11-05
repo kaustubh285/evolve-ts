@@ -9,7 +9,14 @@ import {
   timestamp,
   uuid,
 } from "drizzle-orm/pg-core";
-import { base, createdAt, day, deletedAt, id, updatedAt } from "../schema-helper";
+import {
+  base,
+  createdAt,
+  day,
+  deletedAt,
+  id,
+  updatedAt,
+} from "../schema-helper";
 import { user } from "./auth";
 
 // Units are in the column names so nobody has to guess.

@@ -7,39 +7,50 @@ import { z } from "zod";
 expand(config({ path: [".env.local", ".env"], quiet: true }));
 
 const EnvSchema = z.object({
-	NODE_ENV: z.string().default("development"),
-	PORT: z.coerce.number().default(3000),
-	LOG_LEVEL: z
-		.enum(["fatal", "debug", "info", "warn", "error"])
-		.default("info"),
-	VERSION: z.string().default("dev"),
-	DATABASE_URL: z.url(),
-	BETTER_AUTH_URL: z.url(),
-	BETTER_AUTH_SECRET: z.string().min(1),
-	// Whose "today" the app uses (IANA name). Server runs in UTC; this keeps days aligned with you.
-	APP_TIMEZONE: z.string().default("Europe/London"),
-	ALLOWED_EMAILS: z
-		.string()
-		.transform((s) => s.split(",").map((e) => e.trim().toLowerCase())),
-	// OPTIONAL
-	ANTHROPIC_API_KEY: z.string().optional(),
-	NOT_BULBUL: z.string().optional(),
-	// Obscure secret segment for the unauthenticated /cron/:secret/* endpoints the rpi hits.
-	CRON_SECRET: z.string().min(1).optional(),
-	// NTFY server the cron endpoints publish to.
-	NTFY_BASE_URL: z.url().default("https://ntfy.sh"),
+  NODE_ENV: z.string().default("development"),
+  PORT: z.coerce.number().default(3000),
+  LOG_LEVEL: z
+    .enum(["fatal", "debug", "info", "warn", "error"])
+    .default("info"),
+  VERSION: z.string().default("dev"),
+  DATABASE_URL: z.url(),
+  BETTER_AUTH_URL: z.url(),
+  BETTER_AUTH_SECRET: z.string().min(1),
+  // Extra origins allowed to sign in besides BETTER_AUTH_URL, comma-separated,
+  // wildcards allowed. Dev: "http://192.168.*:3000" so a phone on the same wifi works.
+  TRUSTED_ORIGINS: z
+    .string()
+    .default("")
+    .transform((s) =>
+      s
+        .split(",")
+        .map((o) => o.trim())
+        .filter(Boolean),
+    ),
+  // Whose "today" the app uses (IANA name). Server runs in UTC; this keeps days aligned with you.
+  APP_TIMEZONE: z.string().default("Europe/London"),
+  ALLOWED_EMAILS: z
+    .string()
+    .transform((s) => s.split(",").map((e) => e.trim().toLowerCase())),
+  // OPTIONAL
+  ANTHROPIC_API_KEY: z.string().optional(),
+  NOT_BULBUL: z.string().optional(),
+  // Obscure secret segment for the unauthenticated /cron/:secret/* endpoints the rpi hits.
+  CRON_SECRET: z.string().min(1).optional(),
+  // NTFY server the cron endpoints publish to.
+  NTFY_BASE_URL: z.url().default("https://ntfy.sh"),
 });
 
 export type Env = z.infer<typeof EnvSchema>;
 
 let env: Env;
 try {
-	env = EnvSchema.parse(process.env);
+  env = EnvSchema.parse(process.env);
 } catch (e) {
-	const error = e as ZodError;
-	console.error("Invalid env");
-	console.error(error.flatten().fieldErrors);
-	process.exit(1);
+  const error = e as ZodError;
+  console.error("Invalid env");
+  console.error(error.flatten().fieldErrors);
+  process.exit(1);
 }
 
 export default env;

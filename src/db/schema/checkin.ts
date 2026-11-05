@@ -7,7 +7,7 @@ import {
   text,
   timestamp,
   uniqueIndex,
-  numeric
+  numeric,
 } from "drizzle-orm/pg-core";
 import { base, day } from "../schema-helper";
 import { user } from "./auth";
