@@ -1,22 +1,22 @@
 import {
-  Container,
-  type ContainerProps,
-  Group,
-  Stack,
-  Text,
-  Title,
+	Container,
+	type ContainerProps,
+	Group,
+	Stack,
+	Text,
+	Title,
 } from "@mantine/core";
 
 type PageWrapperProps = {
-  /** Page heading. Omit for pages that draw their own. */
-  title?: React.ReactNode;
-  /** Smaller line under the title. */
-  description?: React.ReactNode;
-  /** Shown on the right of the title (e.g. a button). */
-  actions?: React.ReactNode;
-  /** Max content width. "md" ≈ 960px; use "sm" for forms, "lg" for wide grids. */
-  size?: ContainerProps["size"];
-  children: React.ReactNode;
+	/** Page heading. Omit for pages that draw their own. */
+	title?: React.ReactNode;
+	/** Smaller line under the title. */
+	description?: React.ReactNode;
+	/** Shown on the right of the title (e.g. a button). */
+	actions?: React.ReactNode;
+	/** Max content width. "md" ≈ 960px; use "sm" for forms, "lg" for wide grids. */
+	size?: ContainerProps["size"];
+	children: React.ReactNode;
 };
 
 /**
@@ -24,37 +24,37 @@ type PageWrapperProps = {
  * and an optional title row. Lives inside AppShell.Main (see _authed.tsx).
  */
 export function PageWrapper({
-  title,
-  description,
-  actions,
-  size = "md",
-  children,
+	title,
+	description,
+	actions,
+	size = "md",
+	children,
 }: PageWrapperProps) {
-  const hasHeader = title || description || actions;
+	const hasHeader = title || description || actions;
 
-  return (
-    <Container size={size} py="lg">
-      <Stack gap="lg">
-        {hasHeader && (
-          <Group justify="space-between" align="flex-start" wrap="nowrap">
-            <div>
-              {title && (
-                <Title order={1} size="h2">
-                  {title}
-                </Title>
-              )}
-              {description && (
-                <Text c="dimmed" size="sm">
-                  {description}
-                </Text>
-              )}
-            </div>
-            {actions}
-          </Group>
-        )}
+	return (
+		<Container size={size} py="lg">
+			<Stack gap="lg">
+				{hasHeader && (
+					<Group justify="space-between" align="flex-start" wrap="nowrap">
+						<div>
+							{title && (
+								<Title order={1} size="h2">
+									{title}
+								</Title>
+							)}
+							{description && (
+								<Text c="dimmed" size="sm">
+									{description}
+								</Text>
+							)}
+						</div>
+						{actions}
+					</Group>
+				)}
 
-        {children}
-      </Stack>
-    </Container>
-  );
+				{children}
+			</Stack>
+		</Container>
+	);
 }

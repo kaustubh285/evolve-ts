@@ -1,4 +1,4 @@
-// Project overrides only — formatter/LSP setup lives in your global Zed settings.
+// Project overrides only — everything else comes from your global Zed settings.
 {
   // Vite/Nitro rewrite these constantly while `bun dev` runs; scanning them
   // keeps the TS server busy. (Overrides Zed's default list, so it's repeated.)
@@ -17,5 +17,58 @@
     "**/.tanstack",
     "**/node_modules/.vite",
     "**/node_modules/.nitro"
-  ]
+  ],
+
+  // This project uses Biome (2 spaces), not Prettier/ESLint/Tailwind.
+  // Overrides your global TS/TSX settings (tabs, size 4, formatter auto) here only.
+  "languages": {
+    "TypeScript": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": {
+        "source.organizeImports.biome": true,
+        "source.fixAll.biome": true
+      },
+      "language_servers": [
+        "vtsls",
+        "biome",
+        "!eslint",
+        "!tailwindcss-language-server",
+        "..."
+      ]
+    },
+    "TSX": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "formatter": { "language_server": { "name": "biome" } },
+      "code_actions_on_format": {
+        "source.organizeImports.biome": true,
+        "source.fixAll.biome": true
+      },
+      "language_servers": [
+        "vtsls",
+        "biome",
+        "!eslint",
+        "!tailwindcss-language-server",
+        "..."
+      ]
+    },
+    "JSON": {
+      "tab_size": 2,
+      "hard_tabs": false,
+      "formatter": { "language_server": { "name": "biome" } }
+    }
+  },
+
+  "lsp": {
+    "vtsls": {
+      "settings": {
+        // Use the project's TypeScript (node_modules), and give it more headroom:
+        // Mantine + Drizzle + Better Auth types are big (~2.4k .d.ts files).
+        "vtsls": { "autoUseWorkspaceTsdk": true },
+        "typescript": { "tsserver": { "maxTsServerMemory": 4096 } }
+      }
+    }
+  }
 }
