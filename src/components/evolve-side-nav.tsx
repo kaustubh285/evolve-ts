@@ -1,14 +1,24 @@
-import { Box, Flex, Text } from "@mantine/core";
+import { Stack } from "@mantine/core";
+import { useMatchRoute } from "@tanstack/react-router";
+import { LinkNavLink } from "./links";
+import { NAV_ITEMS } from "./nav-items";
 
-export function EvolveSideNav() {
+/** Side navigation inside the AppShell navbar. `onNavigate` runs after a link is picked. */
+export function EvolveSideNav({ onNavigate }: { onNavigate?: () => void }) {
+  const matchRoute = useMatchRoute();
+
   return (
-    <Box>
-      <Flex direction="column">
-        <Text>Nav Page 1</Text>
-        <Text>Nav Page 1</Text>
-        <Text>Nav Page 1</Text>
-        <Text>Nav Page 4</Text>
-      </Flex>
-    </Box>
+    <Stack component="nav" gap={4}>
+      {NAV_ITEMS.map(({ label, to, icon: Icon }) => (
+        <LinkNavLink
+          key={to}
+          to={to}
+          label={label}
+          leftSection={<Icon size={18} />}
+          active={!!matchRoute({ to, fuzzy: to !== "/" })}
+          onClick={onNavigate}
+        />
+      ))}
+    </Stack>
   );
 }
