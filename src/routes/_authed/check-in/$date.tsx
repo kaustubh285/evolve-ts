@@ -1,6 +1,7 @@
-import { createFileRoute, notFound } from "@tanstack/react-router";
+import { createFileRoute, linkOptions, notFound } from "@tanstack/react-router";
 import { CheckInForm } from "#/components/check-in/check-in-form";
 import { PageWrapper } from "#/components/page-wrapper";
+import { formatIso } from "#/lib/dates";
 import { isoDate } from "#/lib/zod-schemas/common";
 import { getCheckIn } from "#/server/check-in.functions";
 
@@ -22,7 +23,14 @@ function RouteComponent() {
 	const { date } = Route.useParams();
 	const { checkIn, timeZone } = Route.useLoaderData();
 	return (
-		<PageWrapper title={`Check-in`}>
+		<PageWrapper
+			title={`Check-in`}
+			breadcrumbs={[
+				{ label: "Home", link: linkOptions({ to: "/" }) },
+				{ label: "Check-in", link: linkOptions({ to: "/check-in" }) },
+				{ label: formatIso(date) },
+			]}
+		>
 			{/* key: a new date → fresh form, otherwise it keeps the previous day's values */}
 			<CheckInForm
 				key={date}

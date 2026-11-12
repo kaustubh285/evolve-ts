@@ -1,5 +1,4 @@
 import {
-	ActionIcon,
 	Burger,
 	Container,
 	type ContainerProps,
@@ -9,8 +8,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
-import { useNavigate } from "@tanstack/react-router";
-import { ChevronLeft } from "lucide-react";
+import { type Crumb, EvolveBreadcrumbs } from "./breadcrumbs";
 import { useSideNav } from "./side-nav-context";
 
 type PageWrapperProps = {
@@ -22,7 +20,8 @@ type PageWrapperProps = {
 	actions?: React.ReactNode;
 	/** Max content width. "md" ≈ 960px; use "sm" for forms, "lg" for wide grids. */
 	size?: ContainerProps["size"];
-	titleBackNav?: boolean;
+	/** Trail above the title, e.g. Check-in / Thu 12 Nov. Last item = this page (no link). */
+	breadcrumbs?: Crumb[];
 	children: React.ReactNode;
 };
 
@@ -35,10 +34,9 @@ export function PageWrapper({
 	description,
 	actions,
 	size = "md",
-	titleBackNav = true,
+	breadcrumbs,
 	children,
 }: PageWrapperProps) {
-	const navigate = useNavigate();
 	const sideNav = useSideNav();
 	// The side-nav toggle lives here, so every signed-in page gets a title row.
 	const hasHeader = title || description || actions || sideNav;
@@ -48,6 +46,9 @@ export function PageWrapper({
 				{hasHeader && (
 					<Group justify="space-between" align="flex-start" wrap="nowrap">
 						<div>
+							{breadcrumbs && breadcrumbs.length > 0 && (
+								<EvolveBreadcrumbs items={breadcrumbs} />
+							)}
 							{(title || sideNav) && (
 								<Flex align={"center"} gap="sm">
 									{sideNav && (
@@ -59,11 +60,6 @@ export function PageWrapper({
 												sideNav.opened ? "Close navigation" : "Open navigation"
 											}
 										/>
-									)}
-									{titleBackNav && (
-										<ActionIcon onClick={() => navigate({ to: ".." })}>
-											<ChevronLeft />
-										</ActionIcon>
 									)}
 									{title && (
 										<Title order={1} size="h2">

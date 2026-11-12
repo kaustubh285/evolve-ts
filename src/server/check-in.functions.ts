@@ -1,11 +1,11 @@
 import { createServerFn } from "@tanstack/react-start";
-import { and, asc, desc, eq, isNull, sql } from "drizzle-orm";
+import { and, asc, desc, eq, gte, isNull, lte, sql } from "drizzle-orm";
 import { z } from "zod";
 import { db } from "#/db";
 import { checkIn, healthEvent, transaction } from "#/db/schema";
 import env from "#/env";
 import { checkInInput } from "#/lib/zod-schemas/check-in";
-import { dayInput } from "#/lib/zod-schemas/common";
+import { dayInput, isoDate } from "#/lib/zod-schemas/common";
 import { authMiddleware } from "./middleware";
 
 /**
@@ -113,4 +113,32 @@ export const getMultipleCheckIn = createServerFn({ method: "GET" })
     return {
       checkIns: checkInRows,
     };
+  });
+
+/** Check-ins between two dates, inclusive. Newest first. Days without one are simply absent. */
+export const getCheckInRange = createServerFn({ method: "GET" })
+  .middleware([authMiddleware])
+  .validator(
+    z
+      .object({ from: isoDate, to: isoDate })
+      // ISO strings compare like dates.
+      .refine((v) => v.from <= v.to, {
+        message: "`from` must be on or before `to`",
+      }),
+  )
+  .handler(async ({ data: { from, to }, context: { userId } }) => {
+    const checkIns = await db
+      .select()
+      .from(checkIn)
+      .where(
+        and(
+          eq(checkIn.userId, userId),
+          gte(checkIn.date, from),
+          lte(checkIn.date, to),
+          isNull(checkIn.deletedAt),
+        ),
+      )
+      .orderBy(desc(checkIn.date));
+
+    return { checkIns };
   });

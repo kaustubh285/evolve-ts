@@ -22,6 +22,7 @@
 	},
 	"dependencies": {
 		"@mantine/core": "^9.7.4",
+		"@mantine/dates": "^9.8.0",
 		"@mantine/form": "^9.7.4",
 		"@mantine/hooks": "^9.7.4",
 		"@tanstack/react-devtools": "0.10.13",
@@ -33,6 +34,7 @@
 		"@tanstack/react-start": "1.169.4",
 		"better-auth": "^1.5.3",
 		"cn": "^0.5.0",
+		"dayjs": "^1.11.23",
 		"dotenv-expand": "^1000.0.0",
 		"drizzle-kit": "^0.31.9",
 		"drizzle-orm": "^0.45.1",

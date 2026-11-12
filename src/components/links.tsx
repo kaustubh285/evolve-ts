@@ -3,6 +3,10 @@ import {
   type ActionIconProps,
   Anchor,
   type AnchorProps,
+  Button,
+  type ButtonProps,
+  Card,
+  type CardProps,
   NavLink,
   type NavLinkProps,
 } from "@mantine/core";
@@ -37,3 +41,19 @@ const AnchorNavLink = forwardRef<
 
 /** Mantine NavLink (side-nav row) that is a typed router link. */
 export const LinkNavLink = createLink(AnchorNavLink);
+
+const AnchorCard = forwardRef<
+  HTMLAnchorElement,
+  CardProps & Omit<React.ComponentPropsWithoutRef<"a">, keyof CardProps>
+>((props, ref) => <Card component="a" ref={ref} {...props} />);
+
+/** Mantine Card that is a typed router link — the whole card is clickable. */
+export const LinkCard = createLink(AnchorCard);
+
+const AnchorButton = forwardRef<
+  HTMLAnchorElement,
+  ButtonProps & Omit<React.ComponentPropsWithoutRef<"a">, keyof ButtonProps>
+>((props, ref) => <Button component="a" ref={ref} {...props} />);
+
+/** Mantine Button that is a typed router link. */
+export const LinkButton = createLink(AnchorButton);

@@ -1,4 +1,4 @@
-import { Box, Title } from "@mantine/core";
+import { Box } from "@mantine/core";
 import { createFileRoute } from "@tanstack/react-router";
 import { PageWrapper } from "#/components/page-wrapper";
 
