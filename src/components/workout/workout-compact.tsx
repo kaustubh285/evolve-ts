@@ -15,7 +15,7 @@ type ExerciseSummary = {
 };
 
 /** Flat ordered sets → one entry per exercise (consecutive sets of the same exercise). */
-function groupSets(sets: SetRow[]): ExerciseSummary[] {
+export function groupSets(sets: SetRow[]): ExerciseSummary[] {
   const groups: ExerciseSummary[] = [];
   for (const set of sets) {
     const name = set.equipment
@@ -29,7 +29,7 @@ function groupSets(sets: SetRow[]): ExerciseSummary[] {
 }
 
 /** "0.72 km · 9:45" for cardio; "3 sets · top 25 kg" for lifting. */
-function describe(sets: SetRow[]): string {
+export function describeSets(sets: SetRow[]): string {
   const distanceM = sets.reduce((t, s) => t + (s.distanceM ?? 0), 0);
   const durationSec = sets.reduce((t, s) => t + (s.durationSec ?? 0), 0);
   if (distanceM || durationSec) {
@@ -59,6 +59,8 @@ type WorkoutCompactProps = {
   timeZone: string;
   /** Card links to its day's page. Off on that page itself. Default true. */
   linkToDay?: boolean;
+  /** How many exercises before "+N more". Default 4; Infinity in a detail view. */
+  maxExercises?: number;
 };
 
 /** One workout at a glance: title, when, and a line per exercise. */
@@ -66,9 +68,10 @@ export function WorkoutCompact({
   workout: w,
   timeZone,
   linkToDay = true,
+  maxExercises = MAX_LINES,
 }: WorkoutCompactProps) {
   const exercises = groupSets(w.sets);
-  const hidden = exercises.length - MAX_LINES;
+  const hidden = exercises.length - maxExercises;
 
   const body = (
     <Stack gap="xs">
@@ -84,13 +87,13 @@ export function WorkoutCompact({
 
       {exercises.length > 0 ? (
         <Stack gap={2}>
-          {exercises.slice(0, MAX_LINES).map((e) => (
+          {exercises.slice(0, maxExercises).map((e) => (
             <Group key={e.key} justify="space-between" wrap="nowrap" gap="xs">
               <Text size="sm" lineClamp={1}>
                 {e.name}
               </Text>
               <Text size="sm" c="dimmed" style={{ whiteSpace: "nowrap" }}>
-                {describe(e.sets)}
+                {describeSets(e.sets)}
               </Text>
             </Group>
           ))}

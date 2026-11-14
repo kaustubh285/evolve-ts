@@ -8,8 +8,8 @@ import {
   text,
   timestamp,
 } from "drizzle-orm/pg-core";
-import { base, day } from "../schema-helper";
 import { HEALTH_EVENT_TYPES } from "../../lib/zod-schemas/health-event";
+import { base, day } from "../schema-helper";
 import { user } from "./auth";
 
 export const healthEventType = pgEnum("health_event_type", HEALTH_EVENT_TYPES);
@@ -18,6 +18,7 @@ export const healthEvent = pgTable(
   "health_event",
   {
     ...base(),
+    // The day it STARTED (derived from startedAt on save). Links it to that day's check-in.
     date: day(),
 
     type: healthEventType().notNull(),

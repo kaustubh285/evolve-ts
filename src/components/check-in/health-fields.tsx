@@ -1,8 +1,11 @@
 import { NumberInput, Textarea } from "@mantine/core";
 import { useCheckInFormContext } from "./form-context";
 
-// Later: linked workouts and health events for the day go in this section too.
-export function HealthFields() {
+/**
+ * Steps and notes. `children` renders between them — the check-in form puts the
+ * day's workouts and health events there.
+ */
+export function HealthFields({ children }: { children?: React.ReactNode }) {
   const form = useCheckInFormContext();
 
   return (
@@ -16,6 +19,7 @@ export function HealthFields() {
         thousandSeparator=","
         {...form.getInputProps("steps")}
       />
+      {children}
       <Textarea
         label="Notes"
         autosize

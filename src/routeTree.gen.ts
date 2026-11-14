@@ -15,6 +15,8 @@ import { Route as AuthedIndexRouteImport } from './routes/_authed/index'
 import { Route as AuthedCheckInIndexRouteImport } from './routes/_authed/check-in/index'
 import { Route as AuthedCheckInDateRouteImport } from './routes/_authed/check-in/$date'
 import { Route as AuthedExpenseIndexRouteImport } from './routes/_authed/expense/index'
+import { Route as AuthedHealthIndexRouteImport } from './routes/_authed/health/index'
+import { Route as AuthedHealthDateRouteImport } from './routes/_authed/health/$date'
 import { Route as AuthedWorkoutIndexRouteImport } from './routes/_authed/workout/index'
 import { Route as AuthedWorkoutDateRouteImport } from './routes/_authed/workout/$date'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
@@ -48,6 +50,16 @@ const AuthedExpenseIndexRoute = AuthedExpenseIndexRouteImport.update({
   path: '/expense/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedHealthIndexRoute = AuthedHealthIndexRouteImport.update({
+  id: '/health/',
+  path: '/health/',
+  getParentRoute: () => AuthedRoute,
+} as any)
+const AuthedHealthDateRoute = AuthedHealthDateRouteImport.update({
+  id: '/health/$date',
+  path: '/health/$date',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const AuthedWorkoutIndexRoute = AuthedWorkoutIndexRouteImport.update({
   id: '/workout/',
   path: '/workout/',
@@ -68,20 +80,24 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
   '/check-in/$date': typeof AuthedCheckInDateRoute
+  '/health/$date': typeof AuthedHealthDateRoute
   '/workout/$date': typeof AuthedWorkoutDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/check-in/': typeof AuthedCheckInIndexRoute
   '/expense/': typeof AuthedExpenseIndexRoute
+  '/health/': typeof AuthedHealthIndexRoute
   '/workout/': typeof AuthedWorkoutIndexRoute
 }
 export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthedIndexRoute
   '/check-in/$date': typeof AuthedCheckInDateRoute
+  '/health/$date': typeof AuthedHealthDateRoute
   '/workout/$date': typeof AuthedWorkoutDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/check-in': typeof AuthedCheckInIndexRoute
   '/expense': typeof AuthedExpenseIndexRoute
+  '/health': typeof AuthedHealthIndexRoute
   '/workout': typeof AuthedWorkoutIndexRoute
 }
 export interface FileRoutesById {
@@ -90,10 +106,12 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/check-in/$date': typeof AuthedCheckInDateRoute
+  '/_authed/health/$date': typeof AuthedHealthDateRoute
   '/_authed/workout/$date': typeof AuthedWorkoutDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/check-in/': typeof AuthedCheckInIndexRoute
   '/_authed/expense/': typeof AuthedExpenseIndexRoute
+  '/_authed/health/': typeof AuthedHealthIndexRoute
   '/_authed/workout/': typeof AuthedWorkoutIndexRoute
 }
 export interface FileRouteTypes {
@@ -102,20 +120,24 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/check-in/$date'
+    | '/health/$date'
     | '/workout/$date'
     | '/api/auth/$'
     | '/check-in/'
     | '/expense/'
+    | '/health/'
     | '/workout/'
   fileRoutesByTo: FileRoutesByTo
   to:
     | '/login'
     | '/'
     | '/check-in/$date'
+    | '/health/$date'
     | '/workout/$date'
     | '/api/auth/$'
     | '/check-in'
     | '/expense'
+    | '/health'
     | '/workout'
   id:
     | '__root__'
@@ -123,10 +145,12 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authed/'
     | '/_authed/check-in/$date'
+    | '/_authed/health/$date'
     | '/_authed/workout/$date'
     | '/api/auth/$'
     | '/_authed/check-in/'
     | '/_authed/expense/'
+    | '/_authed/health/'
     | '/_authed/workout/'
   fileRoutesById: FileRoutesById
 }
@@ -180,6 +204,20 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedExpenseIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/health/': {
+      id: '/_authed/health/'
+      path: '/health'
+      fullPath: '/health/'
+      preLoaderRoute: typeof AuthedHealthIndexRouteImport
+      parentRoute: typeof AuthedRoute
+    }
+    '/_authed/health/$date': {
+      id: '/_authed/health/$date'
+      path: '/health/$date'
+      fullPath: '/health/$date'
+      preLoaderRoute: typeof AuthedHealthDateRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/_authed/workout/': {
       id: '/_authed/workout/'
       path: '/workout'
@@ -207,18 +245,22 @@ declare module '@tanstack/react-router' {
 interface AuthedRouteChildren {
   AuthedIndexRoute: typeof AuthedIndexRoute
   AuthedCheckInDateRoute: typeof AuthedCheckInDateRoute
+  AuthedHealthDateRoute: typeof AuthedHealthDateRoute
   AuthedWorkoutDateRoute: typeof AuthedWorkoutDateRoute
   AuthedCheckInIndexRoute: typeof AuthedCheckInIndexRoute
   AuthedExpenseIndexRoute: typeof AuthedExpenseIndexRoute
+  AuthedHealthIndexRoute: typeof AuthedHealthIndexRoute
   AuthedWorkoutIndexRoute: typeof AuthedWorkoutIndexRoute
 }
 
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedIndexRoute: AuthedIndexRoute,
   AuthedCheckInDateRoute: AuthedCheckInDateRoute,
+  AuthedHealthDateRoute: AuthedHealthDateRoute,
   AuthedWorkoutDateRoute: AuthedWorkoutDateRoute,
   AuthedCheckInIndexRoute: AuthedCheckInIndexRoute,
   AuthedExpenseIndexRoute: AuthedExpenseIndexRoute,
+  AuthedHealthIndexRoute: AuthedHealthIndexRoute,
   AuthedWorkoutIndexRoute: AuthedWorkoutIndexRoute,
 }
 

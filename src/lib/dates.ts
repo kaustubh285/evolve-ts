@@ -26,7 +26,12 @@ const pad = (n: number) => String(n).padStart(2, "0");
 
 /** Today's date in a given IANA timezone, as ISO. */
 export function todayIso(timeZone: string): string {
-  const p = zonedParts(new Date(), timeZone);
+  return dateInZone(new Date(), timeZone);
+}
+
+/** The calendar day a timestamp falls on in `timeZone`, as ISO. 23:30 UTC can be tomorrow in Asia. */
+export function dateInZone(date: Date, timeZone: string): string {
+  const p = zonedParts(date, timeZone);
   return `${p.year}-${pad(p.month)}-${pad(p.day)}`;
 }
 

@@ -11,7 +11,13 @@ export const Route = createFileRoute("/_authed/check-in/$date")({
 	component: RouteComponent,
 	loader: async ({ params }) => {
 		const day = await getCheckIn({ data: { date: params.date } });
-		return { checkIn: day.checkIn, timeZone: day.timeZone };
+		return {
+			checkIn: day.checkIn,
+			timeZone: day.timeZone,
+			// Same-day entries, linked to the check-in by date.
+			workouts: day.workouts,
+			healthEvents: day.healthEvents,
+		};
 	},
 	params: {
 		parse: ({ date }) => {
@@ -23,7 +29,7 @@ export const Route = createFileRoute("/_authed/check-in/$date")({
 
 function RouteComponent() {
 	const { date } = Route.useParams();
-	const { checkIn, timeZone } = Route.useLoaderData();
+	const { checkIn, timeZone, workouts, healthEvents } = Route.useLoaderData();
 	const { addDate } = useRecentCheckInDates();
 
 	// Remember this day for the side nav's "Recent days". In an effect: localStorage is browser-only.
@@ -46,6 +52,8 @@ function RouteComponent() {
 				date={date}
 				checkIn={checkIn}
 				timeZone={timeZone}
+				workouts={workouts}
+				healthEvents={healthEvents}
 			/>
 		</PageWrapper>
 	);

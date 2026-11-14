@@ -13,6 +13,14 @@ export const HEALTH_EVENT_TYPES = [
   "headache",
 ] as const;
 
+export type HealthEventType = (typeof HEALTH_EVENT_TYPES)[number];
+
+/** "acid_reflux" → "Acid reflux" */
+export const healthEventLabel = (type: HealthEventType) => {
+  const words = type.replace(/_/g, " ");
+  return words[0].toUpperCase() + words.slice(1);
+};
+
 export const healthEventInput = z
   .object({
     id: z.uuid().optional(),

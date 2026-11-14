@@ -1,12 +1,19 @@
 import { Badge, Group, Stack, Text, VisuallyHidden } from "@mantine/core";
-import { Beef, Footprints, Moon } from "lucide-react";
+import { Beef, Dumbbell, Footprints, HeartPulse, Moon } from "lucide-react";
+import type { HealthEventRow } from "#/components/health/health-event-compact";
+import { severityBand } from "#/components/health/severity-picker";
 import { LinkCard } from "#/components/links";
 import { formatIso, timeInZone } from "#/lib/dates";
 import { formatMinutes, formatThousands } from "#/lib/format";
+import { healthEventLabel } from "#/lib/zod-schemas/health-event";
 import type { CheckInRow } from "./form-context";
 
 type CheckInCompactProps = {
-  checkIn: CheckInRow;
+  /** Workouts / health events are attached by getCheckInRange (linked by date). Optional so a bare row works too. */
+  checkIn: CheckInRow & {
+    workouts?: unknown[];
+    healthEvents?: HealthEventRow[];
+  };
   /** Zone to show times in (from router context), so server and browser render the same text. */
   timeZone: string;
   /** Small badge next to the date, e.g. "Today". Also highlights the card. */
@@ -110,6 +117,11 @@ export function CheckInCompact({
           </Stat>
         </Group>
 
+        <DayEntriesLine
+          workouts={checkIn.workouts?.length ?? 0}
+          healthEvents={checkIn.healthEvents ?? []}
+        />
+
         {checkIn.meal && (
           <Text size="sm" c="dimmed" lineClamp={1}>
             {checkIn.meal}
@@ -117,5 +129,48 @@ export function CheckInCompact({
         )}
       </Stack>
     </LinkCard>
+  );
+}
+
+/** "🏋 1 workout · 🩺 Migraine 7/10" — what else happened that day. Nothing → nothing. */
+function DayEntriesLine({
+  workouts,
+  healthEvents,
+}: {
+  workouts: number;
+  healthEvents: HealthEventRow[];
+}) {
+  if (workouts === 0 && healthEvents.length === 0) return null;
+  const [first, ...more] = healthEvents;
+
+  return (
+    <Group gap="md" wrap="nowrap">
+      {workouts > 0 && (
+        <Stat icon={<Dumbbell size={16} />}>
+          {workouts} {workouts === 1 ? "workout" : "workouts"}
+        </Stat>
+      )}
+      {first && (
+        <Stat icon={<HeartPulse size={16} />}>
+          <Text span size="sm" lineClamp={1}>
+            {healthEventLabel(first.type)}
+            {first.severity != null && (
+              <Text
+                span
+                size="sm"
+                fw={500}
+                style={{
+                  color: `var(--mantine-color-${severityBand(first.severity).color}-text)`,
+                }}
+              >
+                {" "}
+                {first.severity}/10
+              </Text>
+            )}
+            {more.length > 0 && ` +${more.length}`}
+          </Text>
+        </Stat>
+      )}
+    </Group>
   );
 }

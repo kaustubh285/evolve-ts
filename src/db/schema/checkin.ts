@@ -3,11 +3,11 @@ import {
   boolean,
   check,
   integer,
+  numeric,
   pgTable,
   text,
   timestamp,
   uniqueIndex,
-  numeric,
 } from "drizzle-orm/pg-core";
 import { base, day } from "../schema-helper";
 import { user } from "./auth";

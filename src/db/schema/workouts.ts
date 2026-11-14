@@ -25,6 +25,7 @@ export const workout = pgTable(
   "workout",
   {
     ...base(),
+    // The day it happened. Links it to that day's check-in (by date, no FK).
     date: day(),
     title: text(), // "Early Morning Workout"
 

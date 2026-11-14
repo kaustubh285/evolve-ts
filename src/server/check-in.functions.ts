@@ -6,6 +6,7 @@ import { checkIn, healthEvent, transaction } from "#/db/schema";
 import env from "#/env";
 import { checkInInput } from "#/lib/zod-schemas/check-in";
 import { dayInput, isoDate } from "#/lib/zod-schemas/common";
+import { withDayEntries } from "./check-in.db";
 import { authMiddleware } from "./middleware";
 
 /**
@@ -110,12 +111,18 @@ export const getMultipleCheckIn = createServerFn({ method: "GET" })
       .limit(count)
       .orderBy(desc(checkIn.date));
 
+    // Plus each day's workouts and health events (linked by date).
     return {
-      checkIns: checkInRows,
+      checkIns: await withDayEntries(userId, checkInRows, {
+        dates: checkInRows.map((c) => c.date),
+      }),
     };
   });
 
-/** Check-ins between two dates, inclusive. Newest first. Days without one are simply absent. */
+/**
+ * Check-ins between two dates, inclusive. Newest first. Days without one are simply absent.
+ * Each comes with that day's workouts and health events (linked by date).
+ */
 export const getCheckInRange = createServerFn({ method: "GET" })
   .middleware([authMiddleware])
   .validator(
@@ -140,5 +147,5 @@ export const getCheckInRange = createServerFn({ method: "GET" })
       )
       .orderBy(desc(checkIn.date));
 
-    return { checkIns };
+    return { checkIns: await withDayEntries(userId, checkIns, { from, to }) };
   });
