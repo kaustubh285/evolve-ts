@@ -2,6 +2,7 @@ import { Badge, Group, Stack, Text, VisuallyHidden } from "@mantine/core";
 import { Beef, Footprints, Moon } from "lucide-react";
 import { LinkCard } from "#/components/links";
 import { formatIso, timeInZone } from "#/lib/dates";
+import { formatMinutes, formatThousands } from "#/lib/format";
 import type { CheckInRow } from "./form-context";
 
 type CheckInCompactProps = {
@@ -11,14 +12,6 @@ type CheckInCompactProps = {
   /** Small badge next to the date, e.g. "Today". Also highlights the card. */
   tag?: string;
 };
-
-/** 460 → "7h 40m" */
-const formatMinutes = (mins: number) =>
-  `${Math.floor(mins / 60)}h ${String(mins % 60).padStart(2, "0")}m`;
-
-/** 8432 → "8,432". Built by hand: toLocaleString can differ between server and browser. */
-const formatThousands = (n: number) =>
-  String(n).replace(/\B(?=(\d{3})+(?!\d))/g, ",");
 
 function Stat({
   icon,

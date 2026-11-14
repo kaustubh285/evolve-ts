@@ -19,13 +19,13 @@ import {
 } from "@tanstack/react-router";
 import { useState } from "react";
 import { z } from "zod";
-import { getSession } from "#/lib/auth.functions";
+import { hasSession } from "#/lib/auth.functions";
 import { authClient } from "#/lib/auth-client";
 
 export const Route = createFileRoute("/login")({
   // Already signed in? Skip the form. Runs before render, on server and client.
   beforeLoad: async () => {
-    if (await getSession()) {
+    if (await hasSession()) {
       throw redirect({ to: "/" });
     }
   },

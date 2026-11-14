@@ -27,11 +27,26 @@ const EnvSchema = z.object({
         .map((o) => o.trim())
         .filter(Boolean),
     ),
+  // IPs/CIDRs of reverse proxies in front of the app (comma-separated). Default: a proxy
+  // on the same machine/container (e.g. `tailscale serve` → localhost).
+  TRUSTED_PROXIES: z
+    .string()
+    .default("127.0.0.1,::1")
+    .transform((s) =>
+      s
+        .split(",")
+        .map((p) => p.trim())
+        .filter(Boolean),
+    ),
   // Whose "today" the app uses (IANA name). Server runs in UTC; this keeps days aligned with you.
   APP_TIMEZONE: z.string().default("Europe/London"),
-  ALLOWED_EMAILS: z
-    .string()
-    .transform((s) => s.split(",").map((e) => e.trim().toLowerCase())),
+  // Only these emails can create an account (comma-separated). Enforced in auth.ts.
+  ALLOWED_EMAILS: z.string().transform((s) =>
+    s
+      .split(",")
+      .map((e) => e.trim().toLowerCase())
+      .filter(Boolean),
+  ),
   // OPTIONAL
   ANTHROPIC_API_KEY: z.string().optional(),
   NOT_BULBUL: z.string().optional(),

@@ -37,5 +37,9 @@ export function useRecentCheckInDates() {
 		[setStored],
 	);
 
-	return { dates, addDate };
+	const clearRecent = () => {
+		setStored([]);
+	};
+
+	return { dates, addDate, clearRecent };
 }

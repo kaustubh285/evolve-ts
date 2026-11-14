@@ -1,4 +1,5 @@
 import {
+	ActionIcon,
 	Burger,
 	Container,
 	type ContainerProps,
@@ -8,6 +9,7 @@ import {
 	Text,
 	Title,
 } from "@mantine/core";
+import { SidebarCloseIcon, SidebarOpenIcon } from "lucide-react";
 import { type Crumb, EvolveBreadcrumbs } from "./breadcrumbs";
 import { useSideNav } from "./side-nav-context";
 
@@ -41,17 +43,38 @@ export function PageWrapper({
 	// The side-nav toggle lives here, so every signed-in page gets a title row.
 	const hasHeader = title || description || actions || sideNav;
 	return (
-		<Container size={size} py="lg">
+		<Container
+			size={size}
+			py="lg"
+			style={{
+				position: "relative",
+			}}
+		>
 			<Stack gap="lg">
 				{hasHeader && (
 					<Group justify="space-between" align="flex-start" wrap="nowrap">
 						<div>
-							{breadcrumbs && breadcrumbs.length > 0 && (
-								<EvolveBreadcrumbs items={breadcrumbs} />
-							)}
+							<Group justify="center" align="center" my={"md"}>
+								{sideNav && (
+									<ActionIcon
+										variant={"subtle"}
+										onClick={sideNav.toggle}
+										mb={"2px"}
+									>
+										{sideNav.opened ? (
+											<SidebarCloseIcon />
+										) : (
+											<SidebarOpenIcon />
+										)}
+									</ActionIcon>
+								)}
+								{breadcrumbs && breadcrumbs.length > 0 && (
+									<EvolveBreadcrumbs items={breadcrumbs} />
+								)}
+							</Group>
 							{(title || sideNav) && (
 								<Flex align={"center"} gap="sm">
-									{sideNav && (
+									{/*{sideNav && (
 										<Burger
 											opened={sideNav.opened}
 											onClick={sideNav.toggle}
@@ -60,7 +83,7 @@ export function PageWrapper({
 												sideNav.opened ? "Close navigation" : "Open navigation"
 											}
 										/>
-									)}
+									)}*/}
 									{title && (
 										<Title order={1} size="h2">
 											{title}
