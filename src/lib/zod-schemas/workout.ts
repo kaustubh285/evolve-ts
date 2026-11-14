@@ -7,6 +7,8 @@ export const workoutSetInput = z.object({
   weightKg: z.number().min(0).max(1000).nullable(),
   reps: optionalInt(0, 1000),
   rpe: optionalInt(1, 10),
+  distanceM: optionalInt(0, 1_000_000),
+  durationSec: optionalInt(1, 24 * 60 * 60),
 });
 
 // No `id` → create. With `id` → update that workout.
@@ -14,6 +16,8 @@ export const workoutSetInput = z.object({
 export const workoutInput = z.object({
   id: z.uuid().optional(),
   date: isoDate,
+  title: optionalText(100),
+  sourceUrl: z.url().max(500).nullable(),
 
   startedAt: z.date().nullable(),
   durationMin: optionalInt(1, 24 * 60),

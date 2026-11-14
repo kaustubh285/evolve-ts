@@ -22,6 +22,13 @@
       "when": 1793631045065,
       "tag": "0002_aromatic_marvel_zombies",
       "breakpoints": true
+    },
+    {
+      "idx": 3,
+      "version": "7",
+      "when": 1794655352437,
+      "tag": "0003_right_marvel_zombies",
+      "breakpoints": true
     }
   ]
 }

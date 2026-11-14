@@ -16,6 +16,7 @@ import { Route as AuthedCheckInIndexRouteImport } from './routes/_authed/check-i
 import { Route as AuthedCheckInDateRouteImport } from './routes/_authed/check-in/$date'
 import { Route as AuthedExpenseIndexRouteImport } from './routes/_authed/expense/index'
 import { Route as AuthedWorkoutIndexRouteImport } from './routes/_authed/workout/index'
+import { Route as AuthedWorkoutDateRouteImport } from './routes/_authed/workout/$date'
 import { Route as ApiAuthSplatRouteImport } from './routes/api/auth/$'
 
 const AuthedRoute = AuthedRouteImport.update({
@@ -52,6 +53,11 @@ const AuthedWorkoutIndexRoute = AuthedWorkoutIndexRouteImport.update({
   path: '/workout/',
   getParentRoute: () => AuthedRoute,
 } as any)
+const AuthedWorkoutDateRoute = AuthedWorkoutDateRouteImport.update({
+  id: '/workout/$date',
+  path: '/workout/$date',
+  getParentRoute: () => AuthedRoute,
+} as any)
 const ApiAuthSplatRoute = ApiAuthSplatRouteImport.update({
   id: '/api/auth/$',
   path: '/api/auth/$',
@@ -62,6 +68,7 @@ export interface FileRoutesByFullPath {
   '/': typeof AuthedIndexRoute
   '/login': typeof LoginRoute
   '/check-in/$date': typeof AuthedCheckInDateRoute
+  '/workout/$date': typeof AuthedWorkoutDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/check-in/': typeof AuthedCheckInIndexRoute
   '/expense/': typeof AuthedExpenseIndexRoute
@@ -71,6 +78,7 @@ export interface FileRoutesByTo {
   '/login': typeof LoginRoute
   '/': typeof AuthedIndexRoute
   '/check-in/$date': typeof AuthedCheckInDateRoute
+  '/workout/$date': typeof AuthedWorkoutDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/check-in': typeof AuthedCheckInIndexRoute
   '/expense': typeof AuthedExpenseIndexRoute
@@ -82,6 +90,7 @@ export interface FileRoutesById {
   '/login': typeof LoginRoute
   '/_authed/': typeof AuthedIndexRoute
   '/_authed/check-in/$date': typeof AuthedCheckInDateRoute
+  '/_authed/workout/$date': typeof AuthedWorkoutDateRoute
   '/api/auth/$': typeof ApiAuthSplatRoute
   '/_authed/check-in/': typeof AuthedCheckInIndexRoute
   '/_authed/expense/': typeof AuthedExpenseIndexRoute
@@ -93,6 +102,7 @@ export interface FileRouteTypes {
     | '/'
     | '/login'
     | '/check-in/$date'
+    | '/workout/$date'
     | '/api/auth/$'
     | '/check-in/'
     | '/expense/'
@@ -102,6 +112,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/'
     | '/check-in/$date'
+    | '/workout/$date'
     | '/api/auth/$'
     | '/check-in'
     | '/expense'
@@ -112,6 +123,7 @@ export interface FileRouteTypes {
     | '/login'
     | '/_authed/'
     | '/_authed/check-in/$date'
+    | '/_authed/workout/$date'
     | '/api/auth/$'
     | '/_authed/check-in/'
     | '/_authed/expense/'
@@ -175,6 +187,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthedWorkoutIndexRouteImport
       parentRoute: typeof AuthedRoute
     }
+    '/_authed/workout/$date': {
+      id: '/_authed/workout/$date'
+      path: '/workout/$date'
+      fullPath: '/workout/$date'
+      preLoaderRoute: typeof AuthedWorkoutDateRouteImport
+      parentRoute: typeof AuthedRoute
+    }
     '/api/auth/$': {
       id: '/api/auth/$'
       path: '/api/auth/$'
@@ -188,6 +207,7 @@ declare module '@tanstack/react-router' {
 interface AuthedRouteChildren {
   AuthedIndexRoute: typeof AuthedIndexRoute
   AuthedCheckInDateRoute: typeof AuthedCheckInDateRoute
+  AuthedWorkoutDateRoute: typeof AuthedWorkoutDateRoute
   AuthedCheckInIndexRoute: typeof AuthedCheckInIndexRoute
   AuthedExpenseIndexRoute: typeof AuthedExpenseIndexRoute
   AuthedWorkoutIndexRoute: typeof AuthedWorkoutIndexRoute
@@ -196,6 +216,7 @@ interface AuthedRouteChildren {
 const AuthedRouteChildren: AuthedRouteChildren = {
   AuthedIndexRoute: AuthedIndexRoute,
   AuthedCheckInDateRoute: AuthedCheckInDateRoute,
+  AuthedWorkoutDateRoute: AuthedWorkoutDateRoute,
   AuthedCheckInIndexRoute: AuthedCheckInIndexRoute,
   AuthedExpenseIndexRoute: AuthedExpenseIndexRoute,
   AuthedWorkoutIndexRoute: AuthedWorkoutIndexRoute,
