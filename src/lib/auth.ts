@@ -23,20 +23,20 @@ export const auth = betterAuth({
 			create: {
 				// Runs before ANY user row is inserted (sign-up, or a future OAuth login),
 				// so the allowlist can't be bypassed by picking a different sign-up path.
-				// before: async (user) => {
-				// 	const email = user.email.trim().toLowerCase();
-				// 	if (!env.ALLOWED_EMAILS.includes(email)) {
-				// 		// Server log only, masked: shows a typo/mismatch without leaking addresses.
-				// 		console.warn(
-				// 			`[auth] sign-up refused for ${maskEmail(email)}; allowed: ${
-				// 				env.ALLOWED_EMAILS.map(maskEmail).join(", ") || "(none set)"
-				// 			}`,
-				// 		);
-				// 		// Same message whether or not the email exists — doesn't confirm who's allowed.
-				// 		throw new APIError("FORBIDDEN", { message: "Sign-ups are closed" });
-				// 	}
-				// 	return { data: user };
-				// },
+				before: async (user) => {
+					const email = user.email.trim().toLowerCase();
+					if (!env.ALLOWED_EMAILS.includes(email)) {
+						// Server log only, masked: shows a typo/mismatch without leaking addresses.
+						console.warn(
+							`[auth] sign-up refused for ${maskEmail(email)}; allowed: ${
+								env.ALLOWED_EMAILS.map(maskEmail).join(", ") || "(none set)"
+							}`,
+						);
+						// Same message whether or not the email exists — doesn't confirm who's allowed.
+						throw new APIError("FORBIDDEN", { message: "Sign-ups are closed" });
+					}
+					return { data: user };
+				},
 			},
 		},
 	},
