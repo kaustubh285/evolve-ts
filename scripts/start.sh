@@ -45,7 +45,13 @@ const deadline = Date.now() + 60000;
   let last = "";
   while (Date.now() < deadline) {
     try {
-      const r = await fetch(url, { signal: AbortSignal.timeout(5000) });
+      // With the client-IP header tailscale serve adds to real requests — otherwise Better
+      // Auth logs its one-time "could not determine a client IP" warning for THIS request
+      // and would hide whether real requests have the problem.
+      const r = await fetch(url, {
+        signal: AbortSignal.timeout(5000),
+        headers: { "x-forwarded-for": "127.0.0.1" },
+      });
       console.log("[selfcheck] OK — app answered", r.status, "on", url);
       return;
     } catch (e) {

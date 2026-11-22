@@ -41,10 +41,12 @@ const EnvSchema = z.object({
   // Whose "today" the app uses (IANA name). Server runs in UTC; this keeps days aligned with you.
   APP_TIMEZONE: z.string().default("Europe/London"),
   // Only these emails can create an account (comma-separated). Enforced in auth.ts.
+  // Only these emails can create an account. Forgiving on purpose (values get pasted into
+  // dashboards): separators can be commas, semicolons or whitespace; quotes are ignored.
   ALLOWED_EMAILS: z.string().transform((s) =>
     s
-      .split(",")
-      .map((e) => e.trim().toLowerCase())
+      .split(/[\s,;]+/)
+      .map((e) => e.replace(/["']/g, "").trim().toLowerCase())
       .filter(Boolean),
   ),
   // OPTIONAL
