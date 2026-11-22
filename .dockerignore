@@ -1,0 +1,13 @@
+# Keep secrets, local notes and build junk out of the build context (and the image).
+node_modules
+.output
+.nitro
+.tanstack
+dist
+.git
+.local
+.env
+.env.*
+!.env.example
+**/*.test.ts
+.DS_Store

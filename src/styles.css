@@ -130,3 +130,15 @@
 	--color-sidebar-border: var(--sidebar-border);
 	--color-sidebar-ring: var(--sidebar-ring);
 }
+
+/*
+ * iOS Safari zooms the page into any focused input whose text is smaller than 16px
+ * (Mantine's default is 14px), and doesn't zoom back out. 16px on touch devices stops it.
+ * Not `maximum-scale=1` in the viewport meta: that also blocks pinch-zoom (accessibility).
+ * Loaded after Mantine's CSS, so this wins at equal specificity.
+ */
+@media (hover: none) and (pointer: coarse) {
+	.mantine-Input-input {
+		font-size: 16px;
+	}
+}

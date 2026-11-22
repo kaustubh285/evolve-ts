@@ -4,7 +4,6 @@ import {
   HeartPulse,
   House,
   type LucideIcon,
-  Wallet,
 } from "lucide-react";
 
 type NavItem = {
@@ -19,5 +18,5 @@ export const NAV_ITEMS: NavItem[] = [
   { label: "Check-in", to: "/check-in", icon: CalendarCheck },
   { label: "Workouts", to: "/workout", icon: Dumbbell },
   { label: "Health", to: "/health", icon: HeartPulse },
-  { label: "Expenses", to: "/expense", icon: Wallet },
+  // Expenses: hidden until the page exists (/expense is still a "Coming soon" stub).
 ];

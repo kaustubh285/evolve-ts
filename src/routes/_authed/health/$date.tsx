@@ -1,8 +1,8 @@
-import { Button, Card, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Button, Card, Stack, Text } from "@mantine/core";
 import { createFileRoute, linkOptions, notFound } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useState } from "react";
-import { HealthEventCompact } from "#/components/health/health-event-compact";
+import { HealthEventDetail } from "#/components/health/health-event-detail";
 import { HealthEventForm } from "#/components/health/health-event-form";
 import { PageWrapper } from "#/components/page-wrapper";
 import { formatIso } from "#/lib/dates";
@@ -65,16 +65,13 @@ function RouteComponent() {
         )}
 
         {healthEvents.length > 0 ? (
-          <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="md">
+          // Each entry shown in full with Edit / Delete right there — no modal, fewer taps.
+          // One column: Edit swaps the card for the form in place, which needs the width.
+          <Stack gap="md">
             {healthEvents.map((e) => (
-              <HealthEventCompact
-                key={e.id}
-                event={e}
-                timeZone={timeZone}
-                linkToDay={false}
-              />
+              <HealthEventDetail key={e.id} event={e} timeZone={timeZone} />
             ))}
-          </SimpleGrid>
+          </Stack>
         ) : (
           !adding && (
             <Text size="sm" c="dimmed">

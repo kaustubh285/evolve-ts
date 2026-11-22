@@ -17,9 +17,10 @@ import { randomId } from "@mantine/hooks";
 import { useRouter } from "@tanstack/react-router";
 import { Plus, Trash2, X } from "lucide-react";
 import { useState } from "react";
-import { zonedDateTime } from "#/lib/dates";
+import { timeInZone, zonedDateTime } from "#/lib/dates";
 import { type WorkoutInput, workoutInput } from "#/lib/zod-schemas/workout";
 import { saveWorkout } from "#/server/workout.functions";
+import { groupSets, type WorkoutWithSets } from "./workout-compact";
 
 // ── Form values ─────────────────────────────────────────────────────────────
 // What the inputs hold. Empty number = "" (Mantine NumberInput), empty text = "".
@@ -81,19 +82,70 @@ export function parseDuration(v: string): number | null {
   return s.split(":").reduce((total, p) => total * 60 + Number(p), 0);
 }
 
-/** Form → what saveWorkout expects. Sets are flattened; exercise name rides on each set. */
+/** 585 → "9:45", 3750 → "1:02:30" (inverse of parseDuration). */
+function formatDuration(sec: number): string {
+  const h = Math.floor(sec / 3600);
+  const m = Math.floor((sec % 3600) / 60);
+  const ss = String(sec % 60).padStart(2, "0");
+  return h ? `${h}:${String(m).padStart(2, "0")}:${ss}` : `${m}:${ss}`;
+}
+
+/** Saved workout → form values (for editing). Flat sets are grouped back into exercises. */
+function fromWorkout(w: WorkoutWithSets, timeZone: string): WorkoutFormValues {
+  const exercises = groupSets(w.sets);
+  return {
+    title: w.title ?? "",
+    startTime: w.startedAt ? timeInZone(w.startedAt, timeZone) : "",
+    durationMin: w.durationMin ?? "",
+    notes: w.notes ?? "",
+    // No sets yet → one empty card to fill in.
+    exercises: !exercises.length
+      ? [emptyExercise()]
+      : exercises.map((g) => {
+          const first = g.sets[0];
+          return {
+            key: randomId(),
+            // Any distance/time on a set → it was cardio.
+            kind: g.sets.some(
+              (s) => s.distanceM != null || s.durationSec != null,
+            )
+              ? "cardio"
+              : "lift",
+            exercise: first.exercise,
+            equipment: first.equipment ?? "",
+            sets: g.sets.map((s) => ({
+              key: randomId(),
+              weightKg: s.weightKg ?? "",
+              reps: s.reps ?? "",
+              rpe: s.rpe ?? "",
+              distanceKm: s.distanceM != null ? s.distanceM / 1000 : "",
+              duration:
+                s.durationSec != null ? formatDuration(s.durationSec) : "",
+            })),
+          };
+        }),
+  };
+}
+
+/**
+ * Form → what saveWorkout expects. Sets are flattened; exercise name rides on each set.
+ * `existing`: when editing, keeps what the form doesn't show (id, Strong link, quality).
+ */
 function toWorkoutInput(
   v: WorkoutFormValues,
   date: string,
   timeZone: string,
+  existing?: WorkoutWithSets,
 ): WorkoutInput {
   return {
+    id: existing?.id,
     date,
     title: text(v.title),
-    sourceUrl: null, // manual entry
+    // Keep the Strong link on edit, or a re-import would no longer spot it as a duplicate.
+    sourceUrl: existing?.sourceUrl ?? null,
     startedAt: v.startTime ? zonedDateTime(date, v.startTime, timeZone) : null,
     durationMin: num(v.durationMin),
-    quality: null,
+    quality: existing?.quality ?? null, // not in the form; don't wipe it
     cardioType: null, // deprecated: cardio lives in the sets
     cardioDurationMin: null,
     cardioDistanceM: null,
@@ -121,24 +173,36 @@ function toWorkoutInput(
 type WorkoutFormProps = {
   date: string;
   timeZone: string;
-  /** Saved or cancelled — the parent closes the form. */
+  /** Edit this workout instead of creating a new one. */
+  workout?: WorkoutWithSets;
+  /** Saved (or cancelled, when there's no onCancel) — the parent closes the form. */
   onDone: () => void;
+  /** Cancel does something else than close, e.g. back to the read-only view. */
+  onCancel?: () => void;
 };
 
-/** Manual workout entry for one day. Standalone (date + onDone) so it also fits a drawer later. */
-export function WorkoutForm({ date, timeZone, onDone }: WorkoutFormProps) {
+/** Create or edit a workout for one day. Standalone (date + onDone) so it fits a modal/drawer. */
+export function WorkoutForm({
+  date,
+  timeZone,
+  workout,
+  onDone,
+  onCancel,
+}: WorkoutFormProps) {
   const router = useRouter();
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState<string | null>(null);
 
   const form = useForm<WorkoutFormValues>({
-    initialValues: {
-      title: "",
-      startTime: "",
-      durationMin: "",
-      notes: "",
-      exercises: [emptyExercise()],
-    },
+    initialValues: workout
+      ? fromWorkout(workout, timeZone)
+      : {
+          title: "",
+          startTime: "",
+          durationMin: "",
+          notes: "",
+          exercises: [emptyExercise()],
+        },
     validate: {
       exercises: {
         exercise: (v) => (v.trim() ? null : "Name the exercise"),
@@ -153,7 +217,7 @@ export function WorkoutForm({ date, timeZone, onDone }: WorkoutFormProps) {
   async function handleSubmit(values: WorkoutFormValues) {
     // Same zod rules as the server (and the importer).
     const parsed = workoutInput.safeParse(
-      toWorkoutInput(values, date, timeZone),
+      toWorkoutInput(values, date, timeZone, workout),
     );
     if (!parsed.success) {
       setError(parsed.error.issues[0].message);
@@ -378,7 +442,7 @@ export function WorkoutForm({ date, timeZone, onDone }: WorkoutFormProps) {
         )}
 
         <Group justify="flex-end">
-          <Button variant="subtle" onClick={onDone}>
+          <Button variant="subtle" onClick={onCancel ?? onDone}>
             Cancel
           </Button>
           <Button type="submit" loading={saving}>

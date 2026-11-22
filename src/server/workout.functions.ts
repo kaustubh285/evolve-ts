@@ -5,7 +5,7 @@ import { db } from "#/db";
 import { workout, workoutSet } from "#/db/schema";
 import env from "#/env";
 import { parseStrongExport, toWorkoutInput } from "#/lib/strong-import";
-import { isoDate } from "#/lib/zod-schemas/common";
+import { idInput, isoDate } from "#/lib/zod-schemas/common";
 import { workoutInput } from "#/lib/zod-schemas/workout";
 import { authMiddleware } from "./middleware";
 import { insertSets } from "./workout.db";
@@ -148,4 +148,29 @@ export const getWorkoutRange = createServerFn({ method: "GET" })
       },
     });
     return { workouts };
+  });
+
+/**
+ * Soft delete: sets deletedAt, so every read (which filters deletedAt IS NULL) stops
+ * seeing it. Its sets stay but are only ever read through the workout.
+ * An imported workout can then be imported again (the sourceUrl index ignores deleted rows).
+ */
+export const deleteWorkout = createServerFn({ method: "POST" })
+  .middleware([authMiddleware])
+  .validator(idInput)
+  .handler(async ({ data: { id }, context: { userId } }) => {
+    const [deleted] = await db
+      .update(workout)
+      .set({ deletedAt: new Date() })
+      .where(
+        and(
+          eq(workout.id, id),
+          eq(workout.userId, userId), // only your own
+          isNull(workout.deletedAt),
+        ),
+      )
+      .returning({ id: workout.id });
+
+    if (!deleted) throw new Error("Workout not found");
+    return deleted;
   });

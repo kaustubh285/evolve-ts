@@ -7,7 +7,10 @@ import {
   UnstyledButton,
 } from "@mantine/core";
 import { Dumbbell, HeartPulse, Plus } from "lucide-react";
-import type { HealthEventRow } from "#/components/health/health-event-compact";
+import {
+  type HealthEventRow,
+  healthTimeRange,
+} from "#/components/health/health-event-compact";
 import { severityBand } from "#/components/health/severity-picker";
 import {
   describeSets,
@@ -111,10 +114,8 @@ export function DayEntries({
 
         {healthEvents.map((h) => {
           const band = h.severity != null ? severityBand(h.severity) : null;
-          const start = h.startedAt && timeInZone(h.startedAt, timeZone);
-          const end = h.endedAt && timeInZone(h.endedAt, timeZone);
           const detail = [
-            start && (end ? `${start} – ${end}` : `From ${start}`),
+            healthTimeRange(h, timeZone),
             h.medication && `Took ${h.medication}`,
             h.notes,
           ]

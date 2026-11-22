@@ -1,15 +1,15 @@
 import { Button, Group, Modal, Stack, Text } from "@mantine/core";
-import { useHotkeys, useMediaQuery } from "@mantine/hooks";
+import { useHotkeys } from "@mantine/hooks";
 import { useRouter } from "@tanstack/react-router";
 import { ChevronLeft, ChevronRight } from "lucide-react";
 import { useState } from "react";
 import { FormSection } from "#/components/form-section";
 import type { HealthEventRow } from "#/components/health/health-event-compact";
-import { HealthEventCompact } from "#/components/health/health-event-compact";
+import { HealthEventDetail } from "#/components/health/health-event-detail";
 import { HealthEventForm } from "#/components/health/health-event-form";
 import { LinkActionIcon, LinkButton } from "#/components/links";
 import type { WorkoutWithSets } from "#/components/workout/workout-compact";
-import { WorkoutCompact } from "#/components/workout/workout-compact";
+import { WorkoutDetail } from "#/components/workout/workout-detail";
 import { WorkoutForm } from "#/components/workout/workout-form";
 import { addDays, formatIso, todayIso } from "#/lib/dates";
 import { checkInInput } from "#/lib/zod-schemas/check-in";
@@ -61,8 +61,6 @@ export function CheckInForm({
 	const [save, setSave] = useState<SaveState>({ kind: "idle" });
 	const [modal, setModal] = useState<DayEntryModal | null>(null);
 	const closeModal = () => setModal(null);
-	// Forms in a modal are cramped on a phone → full screen there.
-	const isMobile = useMediaQuery("(max-width: 48em)");
 	const form = useCheckInForm({
 		initialValues: toFormValues(checkIn, timeZone),
 		// Editing after a save clears "Saved" so the status never lies.
@@ -213,7 +211,7 @@ export function CheckInForm({
 				onClose={closeModal}
 				title={modal && MODAL_TITLES[modal.kind]}
 				size="lg"
-				fullScreen={isMobile}
+				// fullScreen={isMobile}
 			>
 				{modal?.kind === "add-workout" && (
 					<WorkoutForm date={date} timeZone={timeZone} onDone={closeModal} />
@@ -226,43 +224,38 @@ export function CheckInForm({
 					/>
 				)}
 				{modal?.kind === "workout" && (
-					<Stack gap="md">
-						<WorkoutCompact
-							workout={modal.workout}
-							timeZone={timeZone}
-							linkToDay={false}
-							maxExercises={Number.POSITIVE_INFINITY}
-						/>
-						<Group justify="flex-end">
+					<WorkoutDetail
+						workout={modal.workout}
+						timeZone={timeZone}
+						onDone={closeModal}
+						extraActions={
 							<LinkButton
 								to="/workout/$date"
 								params={{ date }}
 								variant="subtle"
 								onClick={saveThenFollow}
 							>
-								Open workouts for this day
+								Day page
 							</LinkButton>
-						</Group>
-					</Stack>
+						}
+					/>
 				)}
 				{modal?.kind === "health" && (
-					<Stack gap="md">
-						<HealthEventCompact
-							event={modal.event}
-							timeZone={timeZone}
-							linkToDay={false}
-						/>
-						<Group justify="flex-end">
+					<HealthEventDetail
+						event={modal.event}
+						timeZone={timeZone}
+						onDone={closeModal}
+						extraActions={
 							<LinkButton
 								to="/health/$date"
 								params={{ date }}
 								variant="subtle"
 								onClick={saveThenFollow}
 							>
-								Open health for this day
+								Day page
 							</LinkButton>
-						</Group>
-					</Stack>
+						}
+					/>
 				)}
 			</Modal>
 			<Group gap="sm" wrap="nowrap" justify="end">

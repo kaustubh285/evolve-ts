@@ -1,9 +1,9 @@
-import { Button, Card, SimpleGrid, Stack, Text } from "@mantine/core";
+import { Button, Card, Stack, Text } from "@mantine/core";
 import { createFileRoute, linkOptions, notFound } from "@tanstack/react-router";
 import { Plus } from "lucide-react";
 import { useState } from "react";
 import { PageWrapper } from "#/components/page-wrapper";
-import { WorkoutCompact } from "#/components/workout/workout-compact";
+import { WorkoutDetail } from "#/components/workout/workout-detail";
 import { WorkoutForm } from "#/components/workout/workout-form";
 import { formatIso } from "#/lib/dates";
 import { isoDate } from "#/lib/zod-schemas/common";
@@ -65,16 +65,13 @@ function RouteComponent() {
         )}
 
         {workouts.length > 0 ? (
-          <SimpleGrid cols={{ base: 1, xs: 2 }} spacing="md">
+          // Each entry shown in full with Edit / Delete right there — no modal, fewer taps.
+          // One column: Edit swaps the card for the form in place, which needs the width.
+          <Stack gap="md">
             {workouts.map((w) => (
-              <WorkoutCompact
-                key={w.id}
-                workout={w}
-                timeZone={timeZone}
-                linkToDay={false}
-              />
+              <WorkoutDetail key={w.id} workout={w} timeZone={timeZone} />
             ))}
-          </SimpleGrid>
+          </Stack>
         ) : (
           !adding && (
             <Text size="sm" c="dimmed">

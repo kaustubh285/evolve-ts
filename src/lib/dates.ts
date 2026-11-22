@@ -69,6 +69,20 @@ export function zonedDateTime(
   return new Date(asUtc.getTime() - zoneOffsetMs(asUtc, timeZone));
 }
 
+/** Timestamp → "2026-11-14T22:00" in `timeZone` — the value a <input type="datetime-local"> takes. */
+export function toDateTimeLocal(date: Date, timeZone: string): string {
+  return `${dateInZone(date, timeZone)}T${timeInZone(date, timeZone)}`;
+}
+
+/** "2026-11-14T22:00" (datetime-local input) in `timeZone` → the real timestamp, or null if malformed. */
+export function fromDateTimeLocal(
+  value: string,
+  timeZone: string,
+): Date | null {
+  const m = /^(\d{4}-\d{2}-\d{2})T(\d{2}:\d{2})/.exec(value);
+  return m ? zonedDateTime(m[1], m[2], timeZone) : null;
+}
+
 /** How far ahead of UTC `timeZone` is at `date` (e.g. +1h for London in summer). */
 function zoneOffsetMs(date: Date, timeZone: string): number {
   const p = zonedParts(date, timeZone);
